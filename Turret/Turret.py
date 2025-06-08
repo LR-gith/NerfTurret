@@ -1,14 +1,18 @@
+import sys
 import cv2
 import numpy as np
 from ultralytics import YOLO
 
 
+if len(sys.argv) > 1:
+    target_class = sys.argv[1]
+else:
+    target_class = 'person'
+
 
 # Load YOLOv5 model (automatically downloads if not available)
 model = YOLO("yolov5su.pt")
 
-# Set target class (you can change this to 'cell phone' or any COCO class)
-target_class = 'person'
 
 # Start video capture from webcam
 cap = cv2.VideoCapture(1)  # 0 = default camera
@@ -41,11 +45,12 @@ while True:
                 highestConf = conf
                 highestConfBox = box
 
-        if highestConfBox is not None:
-            x1, y1, x2, y2 = map(int, box.xyxy[0])
-            x = (x1+x2)//2
-            y = (y1+y2)//2
-            cv2.circle(frame, (x,y),radius=1,color=(0, 0, 255),thickness=2)
+    if highestConfBox is not None:
+        x1, y1, x2, y2 = map(int, highestConfBox.xyxy[0])
+        x = (x1+x2)//2
+        y = (y1+y2)//2
+
+        cv2.circle(frame, (x,y),radius=1,color=(0, 0, 255),thickness=2)
 
     if counter % 15 == 0:
         if highestConf == -1:
