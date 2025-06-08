@@ -5,6 +5,7 @@ import numpy as np
 from ultralytics import YOLO
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from PiController.PiController import PiController
+from CameraThread import CameraThread
 
 width = 640
 height = 480
@@ -17,22 +18,19 @@ else:
     target_class = 'person'
 
 controller = PiController(18,19,2,3)
+controller.assignPins()
 
 # Load YOLOv5 model (automatically downloads if not available)
 model = YOLO("yolov5su.pt")
 
 
 # Start video capture from webcam
-cap = cv2.VideoCapture(0)  # 0 = default camera
+camera = CameraThread(0)  # 0 = default camera
 
-
-if not cap.isOpened():
-    print("Error: Could not open webcam.")
-    exit()
 
 counter = 0
 while True:
-    ret, frame = cap.read()
+    ret, frame = camera.read()
 
     if not ret:
         print("Failed to grab frame.")
@@ -63,7 +61,9 @@ while True:
             print("x:   " ,xAngle, "    y:  " ,yAngle)
         #controller.align()
         #cv2.circle(frame, (x,y),radius=1,color=(0, 0, 255),thickness=2)
-
+    else:
+        controller.setXAngle(90)
+        controller.setYAngle(90)
     if counter % 1 == 0:
         if highestConf == -1:
             print("Detected no", target_class)
@@ -77,7 +77,7 @@ while True:
         break
 
 # Cleanup
-cap.release()
+camera.stop()
 cv2.destroyAllWindows()
 
 #76,100 auf 100cm

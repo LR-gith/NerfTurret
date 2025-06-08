@@ -53,10 +53,10 @@ class PiController:
     def align(self,xAngle, yAngle):
         self.xServoAngle += xAngle
         self.yServoAngle += yAngle
-        self.setXAngle(self.xServoAngle)
-        self.setYAngle(self.yServoAngle)
         print("Moving servo ", xAngle, "in x to pos", self.xServoAngle)
+        self.setXAngle(self.xServoAngle)
         print("Moving servo ", yAngle, "in y to pos", self.yServoAngle)
+        self.setYAngle(self.yServoAngle)
 
 
     def setXAngle(self, angle):
