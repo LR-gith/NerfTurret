@@ -4,6 +4,8 @@ import time
 class PiController:
 
     def __init__(self, xServoPin, yServoPin, chargePin, shootPin):
+        self.xServoAngle = 90
+        self.yServoAngle = 90
         self.xServo = None
         self.yServo = None
         self.xServoPin = xServoPin
@@ -49,7 +51,12 @@ class PiController:
         self.setYAngle(90)
 
     def align(self,xAngle, yAngle):
-        print("To be implemented")
+        self.xServoAngle += xAngle
+        self.yServoAngle += yAngle
+        self.setXAngle(self.xServoAngle)
+        self.setYAngle(self.yServoAngle)
+        print("Moving servo ", xAngle, "in x to pos", self.xServoAngle)
+        print("Moving servo ", yAngle, "in y to pos", self.yServoAngle)
 
 
     def setXAngle(self, angle):
