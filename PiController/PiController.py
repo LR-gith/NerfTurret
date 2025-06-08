@@ -31,17 +31,17 @@ class PiController:
         GPIO.output(self.shootPin, GPIO.LOW)
         print("Shot one time")
 
-    def charge(self,time):
+    def charge(self,waittime):
         GPIO.output(self.chargePin, GPIO.HIGH)
-        time.sleep(time)
+        time.sleep(waittime)
         GPIO.output(self.chargePin, GPIO.LOW)
-        print("Charged for", time, "seconds")
+        print("Charged for", waittime, "seconds")
 
-    def load(self, time):
+    def load(self, waittime):
         GPIO.output(self.shootPin, GPIO.HIGH)
-        time.sleep(time)
+        time.sleep(waittime)
         GPIO.output(self.shootPin, GPIO.LOW)
-        print("Loaded for", time, "seconds")
+        print("Loaded for", waittime, "seconds")
 
 
     def defaultServosPos(self):

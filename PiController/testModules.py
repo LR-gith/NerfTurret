@@ -1,6 +1,6 @@
 import PiController
 
-pi = PiController.PiController(18,19,0,2)
+pi = PiController.PiController(18,19,2,3)
 
 pi.assignPins()
 
