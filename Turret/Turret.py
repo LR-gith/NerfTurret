@@ -3,6 +3,8 @@ import cv2
 import numpy as np
 from ultralytics import YOLO
 
+from PiController.PiController import PiController
+
 width = 640
 height = 480
 widthAng = 90
@@ -13,7 +15,7 @@ if len(sys.argv) > 1:
 else:
     target_class = 'person'
 
-#controller = PiController.PiController(18,19,2,3)
+controller = PiController(18,19,2,3)
 
 # Load YOLOv5 model (automatically downloads if not available)
 model = YOLO("yolov5su.pt")
@@ -55,12 +57,13 @@ while True:
         y = (y1+y2)//2
         xAngle = int((widthAng / width) * (x - width/2))
         yAngle = int(-(heightAng / height) * (y - height/2))
-        if counter % 15 == 0:
+        controller.align(xAngle, yAngle)
+        if counter % 1 == 0:
             print("x:   " ,xAngle, "    y:  " ,yAngle)
         #controller.align()
         #cv2.circle(frame, (x,y),radius=1,color=(0, 0, 255),thickness=2)
 
-    if counter % 15 == 0:
+    if counter % 1 == 0:
         if highestConf == -1:
             print("Detected no", target_class)
         else:
