@@ -31,6 +31,19 @@ class PiController:
         GPIO.output(self.shootPin, GPIO.LOW)
         print("Shot one time")
 
+    def charge(self,time):
+        GPIO.output(self.chargePin, GPIO.HIGH)
+        time.sleep(time)
+        GPIO.output(self.chargePin, GPIO.LOW)
+        print("Charged for", time, "seconds")
+
+    def load(self, time):
+        GPIO.output(self.shootPin, GPIO.HIGH)
+        time.sleep(time)
+        GPIO.output(self.shootPin, GPIO.LOW)
+        print("Loaded for", time, "seconds")
+
+
     def defaultServosPos(self):
         self.setXAngle(90)
         self.setYAngle(90)
@@ -40,12 +53,16 @@ class PiController:
 
 
     def setXAngle(self, angle):
-        if 0 < angle < 180:
+        if 0 <= angle <= 180:
             self.setAngle(self.xServo, angle)
+        else:
+            print("Invalid angle for the xServo")
 
     def setYAngle(self, angle):
-        if 60 < angle < 120:
+        if 60 <= angle <= 120:
             self.setAngle(self.yServo, angle)
+        else:
+            print("Invalid angle for the yServo")
 
     def setAngle(self, servo, angle):
         duty = angle / 18 + 2

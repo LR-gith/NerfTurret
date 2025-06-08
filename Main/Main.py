@@ -1,9 +1,9 @@
 import cv2
 import numpy as np
 from ultralytics import YOLO
-from PiController import PiController
 
-PiController.PiController()
+
+
 # Load YOLOv5 model (automatically downloads if not available)
 model = YOLO("yolov5su.pt")
 
