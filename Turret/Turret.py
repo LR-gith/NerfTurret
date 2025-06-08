@@ -2,7 +2,6 @@ import sys
 import cv2
 import numpy as np
 from ultralytics import YOLO
-
 from PiController.PiController import PiController
 
 width = 640
