@@ -1,7 +1,9 @@
 import sys
+import os
 import cv2
 import numpy as np
 from ultralytics import YOLO
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from PiController.PiController import PiController
 
 width = 640
