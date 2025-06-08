@@ -2,6 +2,7 @@ import sys
 import os
 import cv2
 import numpy as np
+import threading
 from ultralytics import YOLO
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from PiController.PiController import PiController
@@ -27,9 +28,18 @@ model = YOLO("yolov5su.pt")
 # Start video capture from webcam
 camera = CameraThread(0)  # 0 = default camera
 
+running = True
+
+def wait_for_exit():
+    global running
+    input("Press [Enter] to exit...\n")
+    running = False
+
+exit_thread = threading.Thread(target=wait_for_exit, daemon=True)
+exit_thread.start()
 
 counter = 0
-while True:
+while running:
     ret, frame = camera.read()
 
     if not ret:
@@ -79,6 +89,8 @@ while True:
 # Cleanup
 camera.stop()
 cv2.destroyAllWindows()
+controller.end()
+print("Exiting...")
 
 #76,100 auf 100cm
 #auf breite 70°
