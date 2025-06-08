@@ -11,7 +11,7 @@ model = YOLO("yolov5su.pt")
 target_class = 'person'
 
 # Start video capture from webcam
-cap = cv2.VideoCapture(1)  # 0 = default camera
+cap = cv2.VideoCapture(0)  # 0 = default camera
 
 
 if not cap.isOpened():
@@ -45,16 +45,16 @@ while True:
             x1, y1, x2, y2 = map(int, box.xyxy[0])
             x = (x1+x2)//2
             y = (y1+y2)//2
-            cv2.circle(frame, (x,y),radius=1,color=(0, 0, 255),thickness=2)
+            #cv2.circle(frame, (x,y),radius=1,color=(0, 0, 255),thickness=2)
 
-    if counter % 15 == 0:
+    if counter % 1 == 0:
         if highestConf == -1:
             print("Detected no", target_class)
         else:
             print("Detected", target_class, " With confidence:", np.round(highestConf, 3))
 
     counter +=1
-    cv2.imshow("Detection", frame)
+    #cv2.imshow("Detection", frame)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
