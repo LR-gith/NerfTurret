@@ -1,55 +1,64 @@
 import cv2
-import threading
+import numpy as np
+from ultralytics import YOLO
+from PiController import PiController
 
-# Flag to control the running of the loop
-running = True
+PiController.PiController()
+# Load YOLOv5 model (automatically downloads if not available)
+model = YOLO("yolov5su.pt")
 
-def input_listener():
-    global running
-    while True:
-        command = input()  # wait for input from SSH terminal
-        if command.strip().lower() == 'stop':
-            running = False
-            break
+# Set target class (you can change this to 'cell phone' or any COCO class)
+target_class = 'person'
 
-# Initialize the HOG descriptor/person detector
-hog = cv2.HOGDescriptor()
-hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
+# Start video capture from webcam
+cap = cv2.VideoCapture(1)  # 0 = default camera
 
-# Open the webcam (0 is default webcam)
-cap = cv2.VideoCapture(0)
 
 if not cap.isOpened():
-    print("Error: Could not open video stream")
+    print("Error: Could not open webcam.")
     exit()
 
-# Start the input listener thread so we can type 'stop' to end the loop
-listener_thread = threading.Thread(target=input_listener, daemon=True)
-listener_thread.start()
-
-print("Starting person detection. Type 'stop' and press Enter to quit.")
-
-while running:
+counter = 0
+while True:
     ret, frame = cap.read()
+
     if not ret:
-        print("Failed to grab frame")
+        print("Failed to grab frame.")
         break
 
-    # Detect people
-    rects, weights = hog.detectMultiScale(frame, winStride=(8,8), padding=(16,16), scale=1.05)
+    # Run object detection
+    results = model(frame,verbose=False)[0]
 
-    # Draw rectangles on detected people
-    for (x, y, w, h) in rects:
-        cv2.rectangle(frame, (x,y), (x+w, y+h), (0,255,0), 2)
+    highestConf = -1
+    highestConfBox = None
+    for box in results.boxes:
+        cls_id = int(box.cls[0])
+        label = model.names[cls_id]
 
-    # Show the frame
-    cv2.imshow('Person Detection', frame)
+        if label.lower() == target_class.lower():
+            conf = float(box.conf[0])
+            if conf > highestConf:
+                highestConf = conf
+                highestConfBox = box
 
-    # Wait 1ms for 'q' or until window closes
+        if highestConfBox is not None:
+            x1, y1, x2, y2 = map(int, box.xyxy[0])
+            x = (x1+x2)//2
+            y = (y1+y2)//2
+            cv2.circle(frame, (x,y),radius=1,color=(0, 0, 255),thickness=2)
+
+    if counter % 15 == 0:
+        if highestConf == -1:
+            print("Detected no", target_class)
+        else:
+            print("Detected", target_class, " With confidence:", np.round(highestConf, 3))
+
+    counter +=1
+    cv2.imshow("Detection", frame)
+
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
 # Cleanup
 cap.release()
 cv2.destroyAllWindows()
-print("Program stopped.")
