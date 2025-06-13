@@ -1,5 +1,6 @@
-import RPi.GPIO as GPIO
+#import RPi.GPIO as GPIO
 import time
+
 
 class PiController:
 
@@ -12,17 +13,7 @@ class PiController:
         self.yServoPin = yServoPin
         self.chargePin = chargePin
         self.shootPin = shootPin
-
-    def assignPins(self):
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setup(self.xServoPin, GPIO.OUT)
-        self.xServo = GPIO.PWM(self.xServoPin, 50)
-        self.xServo.start(0)
-        GPIO.setup(self.yServoPin, GPIO.OUT)
-        self.yServo = GPIO.PWM(self.yServoPin, 50)
-        self.yServo.start(0)
-        GPIO.setup(self.chargePin, GPIO.OUT)
-        GPIO.setup(self.shootPin, GPIO.OUT)
+        self.__assignPins()
 
     def shoot(self):
         GPIO.output(self.chargePin, GPIO.HIGH)
@@ -33,7 +24,7 @@ class PiController:
         GPIO.output(self.shootPin, GPIO.LOW)
         print("Shot one time")
 
-    def charge(self,waittime):
+    def charge(self, waittime):
         GPIO.output(self.chargePin, GPIO.HIGH)
         time.sleep(waittime)
         GPIO.output(self.chargePin, GPIO.LOW)
@@ -45,48 +36,56 @@ class PiController:
         GPIO.output(self.shootPin, GPIO.LOW)
         print("Loaded for", waittime, "seconds")
 
+    def defaultServoPosition(self):
+        self.__setXAngle(90)
+        self.__setYAngle(90)
 
-    def defaultServosPos(self):
-        self.setXAngle(90)
-        self.setYAngle(90)
-
-    def align(self,xAngle, yAngle):
+    def align(self, xAngle, yAngle):
         self.xServoAngle += xAngle
         self.yServoAngle += yAngle
         print("Moving servo ", xAngle, "in x to pos", self.xServoAngle)
-        self.setXAngle(self.xServoAngle)
+        self.__setXAngle(self.xServoAngle)
         print("Moving servo ", yAngle, "in y to pos", self.yServoAngle)
-        self.setYAngle(self.yServoAngle)
+        self.__setYAngle(self.yServoAngle)
 
+    def __assignPins(self):
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(self.xServoPin, GPIO.OUT)
+        self.xServo = GPIO.PWM(self.xServoPin, 50)
+        self.xServo.start(0)
+        GPIO.setup(self.yServoPin, GPIO.OUT)
+        self.yServo = GPIO.PWM(self.yServoPin, 50)
+        self.yServo.start(0)
+        GPIO.setup(self.chargePin, GPIO.OUT)
+        GPIO.setup(self.shootPin, GPIO.OUT)
 
-    def setXAngle(self, angle):
+    def __setXAngle(self, angle):
         if 0 <= angle <= 180:
-            self.setAngle(self.xServo, angle)
+            self.__setAngle(self.xServo, angle)
         elif angle < 0:
-            self.setAngle(self.xServo, 0)
+            self.__setAngle(self.xServo, 0)
             print("Invalid angle for the xServo")
         elif 180 < angle:
-            self.setAngle(self.xServo, 180)
+            self.__setAngle(self.xServo, 180)
             print("Invalid angle for the xServo")
 
-
-    def setYAngle(self, angle):
+    def __setYAngle(self, angle):
         if 60 <= angle <= 120:
-            self.setAngle(self.yServo, angle)
+            self.__setAngle(self.yServo, angle)
         elif angle < 60:
-            self.setAngle(self.xServo, 60)
+            self.__setAngle(self.xServo, 60)
             print("Invalid angle for the xServo")
         elif 120 < angle:
-            self.setAngle(self.xServo, 120)
+            self.__setAngle(self.xServo, 120)
             print("Invalid angle for the xServo")
 
-    def setAngle(self, servo, angle):
+    def __setAngle(self, servo, angle):
         duty = angle / 18 + 2
         servo.ChangeDutyCycle(duty)
         time.sleep(0.5)
         servo.ChangeDutyCycle(0)
 
-    def end(self):
+    def stop(self):
         self.xServo.stop()
         self.yServo.stop()
         GPIO.cleanup()

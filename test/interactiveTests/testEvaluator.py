@@ -1,4 +1,4 @@
-from Evaluator import Evaluator
+from NerfTurret.Evaluator import Evaluator
 
 ev = Evaluator()
 ev.addDetection(1,2)

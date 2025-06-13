@@ -2,7 +2,7 @@ import cv2
 import threading
 import time
 
-class CameraThread:
+class Camera:
     def __init__(self, camera_index=0):
         self.cap = cv2.VideoCapture(camera_index)
         self.ret, self.frame = self.cap.read()

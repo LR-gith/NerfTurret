@@ -1,8 +1,6 @@
-from PiController.PiController import PiController
+from NerfTurret.PiController import PiController
 
 pi = PiController(18,19,2,3)
-
-pi.assignPins()
 
 try:
     while True:
@@ -18,4 +16,4 @@ except KeyboardInterrupt:
     print("\nExiting...")
 
 finally:
-    pi.end()
+    pi.stop()
