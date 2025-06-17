@@ -1,13 +1,10 @@
-import os
-import sys
 import threading
 import numpy as np
+import argparse
 
 from Camera import Camera
 from PiController import PiController
 from Turret import Turret
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 
 X_SERVO_PIN = 18
@@ -17,30 +14,24 @@ SHOOT_PIN = 3
 running = True
 counter = 0
 
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-i", "--iteration", type=int, help="output after I iterations", default=5)
+parser.add_argument("-c", "--class", type=str, help="detects this object class C", default="person", dest="targetClass")
+parser.add_argument("-pi", "--runningOnPi", action="store_true", help="Use when running the code on a pi")
+args = parser.parse_args()
+
+
 def wait_for_exit():
     global running
     input("Press [Enter] to exit...\n")
     running = False
 
-args = sys.argv[1:]
-if len(args) == 3 and args[2] == '-onPi':
-    print_iteration = int(args[0])
-    target_class = args[1]
-    running_on_pi = True
-elif len(args) == 2:
-    print_iteration = int(args[0])
-    target_class = args[1]
-    running_on_pi = False
-elif len(args) == 1:
-    print_iteration = int(args[0])
-    target_class = 'person'
-    running_on_pi = False
-else:
-    print_iteration = 5
-    target_class = 'person'
-    running_on_pi = False
+print_iteration = args.iteration
+target_class = args.targetClass
+running_on_pi = args.runningOnPi
 
-print(print_iteration, target_class, running_on_pi)
+print("iteration: %d, class: %s, pi: %b",print_iteration, target_class, running_on_pi)
 controller = None
 if running_on_pi: controller = PiController(X_SERVO_PIN, Y_SERVO_PIN, CHARGE_PIN, SHOOT_PIN)
 camera = Camera(1)
