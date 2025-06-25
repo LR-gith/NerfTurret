@@ -3,7 +3,6 @@ import numpy as np
 import argparse
 
 from Camera import Camera
-from PiController import PiController
 from Turret import Turret
 
 
@@ -33,7 +32,10 @@ running_on_pi = args.runningOnPi
 
 print("iteration: %d, class: %s, pi: %b",print_iteration, target_class, running_on_pi)
 controller = None
-if running_on_pi: controller = PiController(X_SERVO_PIN, Y_SERVO_PIN, CHARGE_PIN, SHOOT_PIN)
+if running_on_pi:
+    from PiController import PiController
+    controller = PiController(X_SERVO_PIN, Y_SERVO_PIN, CHARGE_PIN, SHOOT_PIN)
+
 camera = Camera(1)
 turret = Turret(controller, camera, target_class,running_on_pi=running_on_pi)
 
