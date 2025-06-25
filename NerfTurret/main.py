@@ -30,13 +30,13 @@ print_iteration = args.iteration
 target_class = args.targetClass
 running_on_pi = args.runningOnPi
 
-print("iteration: %d, class: %s, pi: %b",print_iteration, target_class, running_on_pi)
+print("iteration: ",print_iteration , ", class: ",target_class ,", pi: ", running_on_pi)
 controller = None
 if running_on_pi:
     from PiController import PiController
     controller = PiController(X_SERVO_PIN, Y_SERVO_PIN, CHARGE_PIN, SHOOT_PIN)
 
-camera = Camera(1)
+camera = Camera(0)
 turret = Turret(controller, camera, target_class,running_on_pi=running_on_pi)
 
 exit_thread = threading.Thread(target=wait_for_exit, daemon=True)
