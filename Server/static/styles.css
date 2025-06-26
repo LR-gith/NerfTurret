@@ -12,13 +12,14 @@ body {
 }
 
 .right-panel {
-    width: 400px;
+    width: 600px;
     margin-left: 20px;
     background-color: #1e1e1e;
     color: #f0f0f0;
     padding: 10px;
     overflow-y: auto;
     height: calc(100vh - 40px);
+    border-radius: 3px;
 }
 
 #values-container {

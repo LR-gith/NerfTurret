@@ -1,5 +1,6 @@
 import cv2
 from ultralytics import YOLO
+import numpy as np
 
 class Turret:
 
@@ -56,7 +57,7 @@ class Turret:
         #if not self.running_on_pi:
         #    cv2.imshow("Detection", frame)
         #    cv2.waitKey(1)
-        values = {"conf":highestConf, "x":x, "y":y, "x_angle":x_angle, "y_angle":y_angle}
+        values = {"conf": np.round(highestConf, 3), "x":x, "y":y, "x_angle":x_angle, "y_angle":y_angle}
         return frame, values
 
 
