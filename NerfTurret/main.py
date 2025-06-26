@@ -4,6 +4,7 @@ import argparse
 
 from Camera import Camera
 from Turret import Turret
+import Client
 
 
 X_SERVO_PIN = 18
@@ -37,19 +38,25 @@ if running_on_pi:
     controller = PiController(X_SERVO_PIN, Y_SERVO_PIN, CHARGE_PIN, SHOOT_PIN)
 
 camera = Camera(0)
-turret = Turret(controller, camera, target_class,running_on_pi=running_on_pi)
+turret = Turret(controller, camera, target_class, running_on_pi=running_on_pi)
 
 exit_thread = threading.Thread(target=wait_for_exit, daemon=True)
 exit_thread.start()
 
 while running:
-    confidence, x_angle, y_angle = turret.run()
+    frame, values = turret.run()
+    confidence = values["conf"]
+    x_angle = values["x_angle"]
+    y_angle = values["y_angle"]
+    Client.update_value_on_server(frame, values)
 
     if counter % print_iteration == 0:
         if confidence == -1:
             print("Detected no", target_class)
+            Client.log_to_server(f"Detected no {target_class}")
         else:
             print("Detected", target_class, " With confidence:", np.round(confidence, 3))
+            Client.log_to_server(f"Detected {target_class} With confidence: {np.round(confidence, 3)}")
             print("x:   ", x_angle, "    y:  ", y_angle)
 
     counter += 1

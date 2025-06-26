@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Turret dashboard</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <link rel="stylesheet" href="../static/styles.css">
+</head>
+<body>
+    <div class="left-panel">
+        <h1>Turret dashboard</h1>
+
+        <div id="image-container">
+            <img id="live-image" src="" onerror="this.onerror=null; this.src='static/notFound.png'" alt="" width="640" height="480">
+        </div>
+
+        <div id="values-container">
+            <p><span class="value-label">Confidence:</span> <span id="conf-value" class="value">-</span></p>
+            <p><span class="value-label">X:</span> <span id="x-value" class="value">-</span></p>
+            <p><span class="value-label">Y:</span> <span id="y-value" class="value">-</span></p>
+            <p><span class="value-label">X Angle:</span> <span id="x-angle-value" class="value">-</span></p>
+            <p><span class="value-label">Y Angle:</span> <span id="y-angle-value" class="value">-</span></p>
+        </div>
+    </div>
+
+    <div class="right-panel">
+        <h2>System Log</h2>
+        <div id="log-container"></div>
+    </div>
+
+    <script src="../static/script.js"></script>
+</body>
+</html>

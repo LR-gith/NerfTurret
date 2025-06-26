@@ -1,8 +1,6 @@
 import cv2
 from ultralytics import YOLO
 
-
-
 class Turret:
 
     def __init__(self, controller, camera, target_class, camera_size=(640, 480), camera_bandwidth=(90, 70),running_on_pi=True):
@@ -19,6 +17,8 @@ class Turret:
 
 
     def run(self):
+        x = None
+        y = None
         x_angle = None
         y_angle = None
 
@@ -53,11 +53,11 @@ class Turret:
         else:
             if self.running_on_pi: self.controller.defaultServoPosition()
 
-        if not self.running_on_pi:
-            cv2.imshow("Detection", frame)
-            cv2.waitKey(1)
-
-        return highestConf, x_angle, y_angle
+        #if not self.running_on_pi:
+        #    cv2.imshow("Detection", frame)
+        #    cv2.waitKey(1)
+        values = {"conf":highestConf, "x":x, "y":y, "x_angle":x_angle, "y_angle":y_angle}
+        return frame, values
 
 
     def stop(self):
