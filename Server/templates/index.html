@@ -1,29 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Turret dashboard</title>
+    <title>Turret Dashboard</title>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <link rel="stylesheet" href="../static/styles.css">
 </head>
 <body>
-    <div class="left-panel">
-        <h1>Turret dashboard</h1>
-
-        <div id="image-container">
-            <img id="live-image" src="" onerror="this.onerror=null; this.src='static/notFound.png'" alt="" width="640" height="480">
+    <div class="left-middle-container">
+        <div class="title">
+            <h1>Turret Dashboard</h1>
         </div>
 
-        <div id="values-container">
-            <p><span class="value-label">Confidence:</span> <span id="conf-value" class="value">-</span></p>
-            <p><span class="value-label">X:</span> <span id="x-value" class="value">-</span></p>
-            <p><span class="value-label">Y:</span> <span id="y-value" class="value">-</span></p>
-            <p><span class="value-label">X Angle:</span> <span id="x-angle-value" class="value">-</span></p>
-            <p><span class="value-label">Y Angle:</span> <span id="y-angle-value" class="value">-</span></p>
+        <div class="panels-container">
+            <div class="left-panel">
+
+                <div class="image-container">
+                    <img id="live-image" src="../static/notFound.png" onerror="this.onerror=null; this.src='static/notFound.png'" alt="" width="640" height="480">
+                </div>
+
+                <div class="confidence-container">
+                    <p><span class="conf-label">Confidence:</span> <span id="conf-value" class="value">-</span></p>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" style="width: 70%;"></div>
+                    </div>
+                </div>
+                <div class="values-container">
+                    <p><span class="value-label">X Angle:</span> <span id="x-angle-value" class="value">-</span></p>
+                </div>
+            </div>
+
+            <div class="middle-panel">
+                <div class="image-container">
+                    <img id="live-image2" src="../static/notFound.png" onerror="this.onerror=null; this.src='static/notFound.png'" alt="" width="640" height="480">
+                </div>
+
+                <div class="x-and-y-container">
+                    <div class="x-and-y-subcontainer">
+                        <div class="xy-pair">
+                            <span class="x-and-y-label">X:</span>
+                            <span id="x-value" class="x-and-y-value">-</span>
+                        </div>
+                        <div class="xy-pair">
+                            <span class="x-and-y-label">Y:</span>
+                            <span id="y-value" class="x-and-y-value">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="values-container">
+                    <p><span class="value-label">Y Angle:</span> <span id="y-angle-value" class="value">-</span></p>
+                    <div class="angle-visual">
+                    <div class="angle-circle">
+                        <div class="angle-line" id="y-angle-line"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <div class="right-panel">
-        <h2>System Log</h2>
+        <h2>Turret Log</h2>
         <div id="log-container"></div>
     </div>
 

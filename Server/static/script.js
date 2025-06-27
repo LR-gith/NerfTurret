@@ -24,10 +24,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateValues(values) {
         document.getElementById('conf-value').textContent = values.conf || '-';
+        document.querySelector('.confidence-fill').style.width = (values.conf*100 || 0) + '%';
         document.getElementById('x-value').textContent = values.x || '-';
         document.getElementById('y-value').textContent = values.y || '-';
         document.getElementById('x-angle-value').textContent = values.x_angle || '-';
         document.getElementById('y-angle-value').textContent = values.y_angle || '-';
+        const line = document.getElementById('y-angle-line');
+        if (line) {
+            line.style.transform = `rotate(${values.y_angle}deg)`;
+        }
     }
 
     socket.on('update', (data) => {
