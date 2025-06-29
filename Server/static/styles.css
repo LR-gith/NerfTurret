@@ -20,7 +20,7 @@ body {
 .panels-container {
     display: flex;
     flex-direction: row;
-    gap: 20px; /* optional spacing between panels */
+    gap: 20px;
 }
 
 .image-container {
@@ -72,8 +72,9 @@ body {
 .confidence-container {
     margin-top: 20px;
     font-size: 18px;
-    background-color: #f5f5f5;
-    padding: 5px 15px;
+    background-color: #0D0D0D;
+    padding: 0 15px 0;
+    border-top: #0066cc solid 1px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -84,7 +85,13 @@ body {
     font-weight: bold;
     display: inline-block;
     width: 120px;
-    color: #333;
+    color: #f5f5f5;
+}
+
+.conf-value-class {
+    display: inline-block;
+    width: 50px;
+    color: #f5f5f5;
 }
 
 .confidence-bar {
@@ -97,9 +104,9 @@ body {
 
 .confidence-fill {
   height: 100%;
-  background-color: #0033FF; /* green */
-  width: 70%; /* update dynamically */
-  transition: width 0.1s ease;
+  background-color: #0033FF;
+  width: 70%;
+  transition: width 0.2s ease;
 }
 
 .x-and-y-container {
@@ -107,10 +114,10 @@ body {
     flex: 1;
     margin-top: 20px;
     font-size: 18px;
-    background-color: #f5f5f5;
     padding: 5px 15px;
-    border-radius: 5px;
     flex-direction: row;
+    background-color: #0D0D0D;
+    border-top: #0066cc solid 1px;
 }
 
 .x-and-y-subcontainer {
@@ -129,13 +136,88 @@ body {
     font-weight: bold;
     display: inline-block;
     width: 60px;
-    color: #333;
+    color: #f5f5f5;
 }
 
 .x-and-y-value {
     display: inline-block;
     width: 50px;
-    color: #0066cc;
+    color: #f5f5f5;
+}
+
+.angle-container {
+    font-size: 18px;
+    background-color: #0D0D0D;
+    padding: 0 15px 15px;
+    border-top: #0066cc solid 1px;
+    border-bottom: #0066cc solid 1px;
+}
+
+.x-and-y-angle-label {
+    font-weight: bold;
+    display: inline-block;
+    width: 170px;
+    color: #f5f5f5;
+    position: relative;
+}
+
+.hover-angle-label {
+    display: none;
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    background: #222;
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+.hover-angle-label-for-plus {
+    display: none;
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    background: #222;
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    transform: rotate(25deg);
+}
+
+.hover-angle-label-for-minus {
+    display: none;
+    position: absolute;
+    top: 100%;
+    background: #222;
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    transform: rotate(-205deg);
+}
+
+
+.x-and-y-angle-label:hover .hover-angle-label {
+    display: block;
+}
+
+.angle-label-plus:hover .hover-angle-label-for-plus {
+    display: block;
+}
+
+.angle-label-minus:hover .hover-angle-label-for-minus {
+    display: block;
+}
+
+.x-and-y-angle-value {
+    display: inline-block;
+    width: 50px;
+    color: #f5f5f5;
 }
 
 .angle-visual {
@@ -145,23 +227,77 @@ body {
 }
 
 .angle-circle {
-    width: 100px;
-    height: 100px;
-    border: 2px solid #333;
+    width: 150px;
+    height: 150px;
+    border: 2px solid #f5f5f5;
     border-radius: 50%;
     position: relative;
+}
+
+.angle-label-top {
+    position: absolute;
+    font-family: monospace;
+    color: #f5f5f5;
+    font-size: 18px;
+    top: -25px;
+    left: 50%;
+    transform: translateX(-40%);
+}
+
+.angle-label-plus {
+    position: absolute;
+    font-family: monospace;
+    color: #f5f5f5;
+    font-size: 18px;
+    top: -22px;
+    left: 22%;
+    transform: translateX(-40%);
+    rotate: -25deg;
+}
+
+.angle-label-minus {
+    position: absolute;
+    font-family: monospace;
+    color: #f5f5f5;
+    font-size: 18px;
+    top: -22px;
+    right: 22%;
+    transform: translateX(-40%);
+    rotate: 205deg;
 }
 
 .angle-line {
     width: 2px;
     height: 50%;
-    background-color: red;
+    background-color: deepskyblue;
     position: absolute;
     top: 0;
     left: 50%;
     transform-origin: bottom center;
-    transform: rotate(0deg); /* This will be updated via JS */
+    transform: rotate(0deg);
 }
+
+.limit-line-0 {
+    background-color: firebrick;
+    transform: rotate(-90deg);
+}
+
+
+.limit-line-180 {
+    background-color: firebrick;
+    transform: rotate(90deg);
+}
+
+.limit-line-60 {
+    background-color: firebrick;
+    transform: rotate(-30deg);
+}
+
+.limit-line-120 {
+    background-color: firebrick;
+    transform: rotate(30deg);
+}
+
 #image-container {
     text-align: center;
     display: flex;

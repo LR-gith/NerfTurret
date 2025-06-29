@@ -1,10 +1,15 @@
 import threading
-import numpy as np
 import argparse
+import Client
+
+# initializes connection to the server
+if not Client.initializeConnection():
+    exit("Failed to connect to Server")
 
 from Camera import Camera
 from Turret import Turret
-import Client
+from PiController import PiController
+
 
 
 X_SERVO_PIN = 18
@@ -18,7 +23,7 @@ counter = 0
 parser = argparse.ArgumentParser()
 parser.add_argument("-i", "--iteration", type=int, help="output after I iterations", default=5)
 parser.add_argument("-c", "--class", type=str, help="detects this object class C", default="person", dest="targetClass")
-parser.add_argument("-pi", "--runningOnPi", action="store_true", help="Use when running the code on a pi")
+parser.add_argument("-img", "--showImg", action="store_true", help="When used an window will display the camera after detection")
 args = parser.parse_args()
 
 
@@ -29,16 +34,14 @@ def wait_for_exit():
 
 print_iteration = args.iteration
 target_class = args.targetClass
-running_on_pi = args.runningOnPi
+show_img = args.showImg
 
-print("iteration: ",print_iteration , ", class: ",target_class ,", pi: ", running_on_pi)
-controller = None
-if running_on_pi:
-    from PiController import PiController
-    controller = PiController(X_SERVO_PIN, Y_SERVO_PIN, CHARGE_PIN, SHOOT_PIN)
+print("iteration: ",print_iteration , ", class: ",target_class ,", show image: ", show_img)
 
+
+controller = PiController(X_SERVO_PIN, Y_SERVO_PIN, CHARGE_PIN, SHOOT_PIN)
 camera = Camera(0)
-turret = Turret(controller, camera, target_class, running_on_pi=running_on_pi)
+turret = Turret(controller, camera, target_class, show_img=show_img)
 
 exit_thread = threading.Thread(target=wait_for_exit, daemon=True)
 exit_thread.start()
@@ -46,24 +49,19 @@ exit_thread.start()
 while running:
     frame, values = turret.run()
     confidence = values["conf"]
-    x_angle = values["x_angle"]
-    y_angle = values["y_angle"]
     Client.update_value_on_server(frame, values)
 
     if counter % print_iteration == 0:
         if confidence == -1:
-            print("Detected no", target_class)
-            Client.log_to_server(f"Detected no {target_class}")
+            Client.log_to_server(f"No {target_class} detected")
         else:
-            print("Detected", target_class, " With confidence:", np.round(confidence, 3))
-            Client.log_to_server(f"Detected {target_class} With confidence: {np.round(confidence, 3)}")
-            print("x:   ", x_angle, "    y:  ", y_angle)
+            Client.log_to_server(f"Detected {target_class}")
 
     counter += 1
 
 turret.stop()
 camera.stop()
-if running_on_pi: controller.stop()
+controller.stop()
 
 
 

@@ -12,12 +12,18 @@ current_values = {
     'conf': "No value set yet",
     'x': "No value set yet",
     'y': "No value set yet",
-    'x_angle': "No value set yet",
-    'y_angle': "No value set yet"
+    'relative_x_angle': "No value set yet",
+    'relative_y_angle': "No value set yet",
+    'absolut_x_angle': "No value set yet",
+    'absolut_y_angle': "No value set yet"
 }
 @app.route('/')
 def homepage():
     return render_template('index.html', value=stored_value['value'])
+
+@app.route('/ping', methods=['GET'])
+def ping():
+    return "pong"
 
 @app.route('/update', methods=['POST'])
 def update_value():
@@ -33,8 +39,10 @@ def update_value():
         'conf': request.form.get('conf'),
         'x': request.form.get('x'),
         'y': request.form.get('y'),
-        'x_angle': request.form.get('x_angle'),
-        'y_angle': request.form.get('y_angle')
+        'relative_x_angle': request.form.get('relative_x_angle'),
+        'relative_y_angle': request.form.get('relative_y_angle'),
+        'absolut_x_angle': request.form.get('absolut_x_angle'),
+        'absolut_y_angle': request.form.get('absolut_y_angle')
     }
 
     socketio.emit('update', {
@@ -45,8 +53,10 @@ def update_value():
         "confidence": current_values["conf"],
         "x": current_values["x"],
         "y": current_values["y"],
-        "x_angle": current_values["x_angle"],
-        "y_angle": current_values["y_angle"],
+        "relative_x_angle": current_values["relative_x_angle"],
+        "relative_y_angle": current_values["relative_y_angle"],
+        "absolut_x_angle": current_values['absolut_x_angle'],
+        "absolut_y_angle": current_values['absolut_y_angle']
     }), 200
 
 

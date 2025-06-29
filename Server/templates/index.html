@@ -19,13 +19,40 @@
                 </div>
 
                 <div class="confidence-container">
-                    <p><span class="conf-label">Confidence:</span> <span id="conf-value" class="value">-</span></p>
+                    <p><span class="conf-label">Confidence:</span> <span id="conf-value" class="conf-value-class">-</span></p>
                     <div class="confidence-bar">
                         <div class="confidence-fill" style="width: 70%;"></div>
                     </div>
                 </div>
-                <div class="values-container">
-                    <p><span class="value-label">X Angle:</span> <span id="x-angle-value" class="value">-</span></p>
+
+                <div class="angle-container">
+                    <p><span class="x-and-y-angle-label">Absolut X angle:
+                    <span class="hover-angle-label">displays the absolut horizontal angle of the turret's direction</span>
+                    </span> <span id="absolut-x-angle-value" class="x-and-y-angle-value">-</span></p>
+                    <div class="angle-visual">
+                    <div class="angle-circle">
+                        <div class="angle-label-top">90</div>
+                        <div class="angle-label-plus">+<span class="hover-angle-label-for-plus">left</span></div>
+                        <div class="angle-label-minus">-<span class="hover-angle-label-for-minus">right</span></div>
+                        <div class="angle-line limit-line-0"></div>
+                        <div class="angle-line limit-line-180"></div>
+                        <div class="angle-line" id="absolut-x-angle-line"></div>
+                    </div>
+                    </div>
+                </div>
+
+                <div class="angle-container">
+                    <p><span class="x-and-y-angle-label">Relative X angle:
+                    <span class="hover-angle-label">displays the relative horizontal angle the turret calculated</span>
+                    </span> <span id="relative-x-angle-value" class="x-and-y-angle-value">-</span></p>
+                    <div class="angle-visual">
+                    <div class="angle-circle">
+                        <div class="angle-label-top">0</div>
+                        <div class="angle-label-plus">+</div>
+                        <div class="angle-label-minus">-</div>
+                        <div class="angle-line" id="relative-x-angle-line"></div>
+                    </div>
+                    </div>
                 </div>
             </div>
 
@@ -47,13 +74,34 @@
                     </div>
                 </div>
 
-                <div class="values-container">
-                    <p><span class="value-label">Y Angle:</span> <span id="y-angle-value" class="value">-</span></p>
+                <div class="angle-container">
+                    <p><span class="x-and-y-angle-label">Absolut Y angle:
+                        <span class="hover-angle-label">displays the absolut vertical angle of the turret's direction</span>
+                    </span> <span id="absolut-y-angle-value" class="x-and-y-angle-value">-</span></p>
                     <div class="angle-visual">
                     <div class="angle-circle">
-                        <div class="angle-line" id="y-angle-line"></div>
+                        <div class="angle-label-top">90</div>
+                        <div class="angle-label-plus">+<span class="hover-angle-label-for-plus">up</span></div>
+                        <div class="angle-label-minus">-<span class="hover-angle-label-for-minus">down</span></div>
+                        <div class="angle-line limit-line-60"></div>
+                        <div class="angle-line limit-line-120"></div>
+                        <div class="angle-line" id="absolut-y-angle-line"></div>
+                    </div>
                     </div>
                 </div>
+                <div class="angle-container">
+                    <p><span class="x-and-y-angle-label">Relative Y angle:
+                        <span class="hover-angle-label">displays the relative vertical angle the turret calculated</span>
+                    </span> <span id="relative-y-angle-value" class="x-and-y-angle-value">-</span>
+                    </p>
+                    <div class="angle-visual">
+                    <div class="angle-circle">
+                        <div class="angle-label-top">0</div>
+                        <div class="angle-label-plus">+</div>
+                        <div class="angle-label-minus">-</div>
+                        <div class="angle-line" id="relative-y-angle-line"></div>
+                    </div>
+                    </div>
                 </div>
             </div>
         </div>
