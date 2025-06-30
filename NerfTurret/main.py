@@ -24,6 +24,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-i", "--iteration", type=int, help="output after I iterations", default=5)
 parser.add_argument("-c", "--class", type=str, help="detects this object class C", default="person", dest="targetClass")
 parser.add_argument("-img", "--showImg", action="store_true", help="When used an window will display the camera after detection")
+parser.add_argument("-v", "--verbose", action="store_true", help="Gives extra terminal output")
 args = parser.parse_args()
 
 
@@ -35,11 +36,12 @@ def wait_for_exit():
 print_iteration = args.iteration
 target_class = args.targetClass
 show_img = args.showImg
+verbose = args.verbose
 
-print("iteration: ",print_iteration , ", class: ",target_class ,", show image: ", show_img)
+print("iteration: ",print_iteration , ", class: ",target_class ,", show image: ", show_img, ", verbose: ", verbose)
 
 
-controller = PiController(X_SERVO_PIN, Y_SERVO_PIN, CHARGE_PIN, SHOOT_PIN)
+controller = PiController(X_SERVO_PIN, Y_SERVO_PIN, CHARGE_PIN, SHOOT_PIN, verbose=verbose)
 camera = Camera(0)
 turret = Turret(controller, camera, target_class, show_img=show_img)
 
@@ -47,15 +49,18 @@ exit_thread = threading.Thread(target=wait_for_exit, daemon=True)
 exit_thread.start()
 
 while running:
-    frame, values = turret.run()
+    frame, mask, values = turret.run()
     confidence = values["conf"]
-    Client.update_value_on_server(frame, values)
+    if mask is not None and mask.size > 0:
+        Client.update_color_detection(frame, mask, values)
+    else:
+        Client.update_object_detection(frame, values)
 
     if counter % print_iteration == 0:
         if confidence == -1:
-            Client.log_to_server(f"No {target_class} detected")
+            Client.log_to_server(f"No {target_class} object detected")
         else:
-            Client.log_to_server(f"Detected {target_class}")
+            Client.log_to_server(f"Detected {target_class} object")
 
     counter += 1
 

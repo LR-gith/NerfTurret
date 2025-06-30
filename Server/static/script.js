@@ -1,8 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
     const socket = io();
     const imgElement = document.getElementById('live-image');
+    const maskElement = document.getElementById('live-mask');
     const logContainer = document.getElementById('log-container');
-    let lastUpdateTime = 0;
+    let lastUpdateTime_img = 0;
+    let lastUpdateTime_mask = 0;
 
     function addLog(message) {
         const now = new Date();
@@ -16,9 +18,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateImage() {
         const now = Date.now();
-        if (now - lastUpdateTime > 10) {
+        if (now - lastUpdateTime_img > 10) {
             imgElement.src = '/get_image?' + now;
-            lastUpdateTime = now;
+            lastUpdateTime_img = now;
+        }
+    }
+
+    function updateBothImages() {
+        const now = Date.now();
+        if (now - lastUpdateTime_img > 10) {
+            imgElement.src = '/get_image?' + now;
+            lastUpdateTime_img = now;
+        }
+        if (now - lastUpdateTime_mask > 10) {
+            maskElement.src = '/get_mask?' + now;
+            lastUpdateTime_mask = now;
         }
     }
 
@@ -49,9 +63,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    socket.on('update', (data) => {
+    socket.on('updateObjectDetection', (data) => {
         if (data.image_updated) {
             updateImage();
+        }
+        if (data.values) {
+            updateValues(data.values);
+        }
+    });
+
+    socket.on('updateColorDetection', (data) => {
+        if (data.both_image_updated) {
+            updateBothImages();
         }
         if (data.values) {
             updateValues(data.values);
