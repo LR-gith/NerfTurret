@@ -1,30 +1,44 @@
 ## Running the code
-If you want to run it on a Raspberry Pi with pin control you need to run the code with the necessary arguments(below).
+Starting the Server: `/Nerfturret/Server/` + `py Server.py`(windows) or `python3 Server.py`(linux)
+
+Running the turret: `/Nerfturret/Server/` + `py main.py`(windows) or `python3 Server.py`(linux) + arguments
 
 ## Arguments
-There are currently the arguments to configure.
+`-h`, `--help`: Shows the arguments and their descriptions.
 
-`-h`, `--help`: Shows the arguments and thier descriptions.
+`-i`,`--iteration`: The iterations after an info is printed to the terminal and the Website. Default: `5`
 
-`-i`,`--iteration`: The iterations after an info is printed to the Termianl. Default: `5`
+`-c`, `--class`: 
+The object or color class which will be detected. Default: `"person"`.  
+For more information see [object detection](./README.md#object-detection) and [color detection](./README.md#color-detection)
 
-`-c`, `--class`: The object class which is detected. Default: `person`, Example: `cell phone`. All classes -> [classes](https://github.com/ultralytics/ultralytics/blob/main/ultralytics/cfg/datasets/coco.yaml)
+`-cr`, `-color_range`: The range used to detect around the color. Default: `40`  
+For more information see [color detection](./README.md#color-detection)
 
-`-pi`, `--runningOnPi`: Enables the mode to run the code on a Pi.
+`-img`, `--show_image`: If used, displays the camera output after detection in a new window. Same as display on website. 
 
-## Examples
-Each line requires `py .\main.py` for windows and `python3 main.py` for linux infront of the arguments. Also the current path needs to be `/NerfTurret/NerfTurret`.
+`-v`, `--verbose`: If used, gives more output in the terminal. Affected by `-i`.
 
-Run the code with 5 iterations per terminal output, detecting  persons and running not on a pi ` ` (no additional arguments)
+## Object detection
+Detects different objects. If it is possible to use color detection consider this option. Object detection uses more capacity than color detection and is therefore much slower.
 
-Run the code with 2 iterations per terminal output, detecting  persons and running not on a pi `-i 2`
+See all object classes that can be detected -> [classes](https://github.com/ultralytics/ultralytics/blob/main/ultralytics/cfg/datasets/coco.yaml). 
 
-Run the code with 5 iterations per terminal output , detecting  phones and running not on a pi `-i 5 -c "cell phone"`
+Example: `-c "cell phone"`
 
-Run the code with 5 iterations per terminal output , detecting  persons and running on a pi `-i 5 -c "cell phone" -pi`
+## Color detection
+Detects different objects based on their color. It's faster than actual object detection. The detection is based on a range around the entered color because
+it is very difficult to get the exact color especially due to constantly changing lighting.  
+The lower bound color is calculated by subtracting the range value from each rgb value of the entered color.
+The upper bound value is calculated the same way but with addition. 
 
+To detect a color enter the name of one of the standard CSS3 colors.
 
-## Optimal for Testing
+See all colors that can be detected ->  [colors](https://www.w3schools.com/cssref/css_colors.php)
+
+Example: `-c "red"`, `-c "lightblue"`, `-c "blue" -cr 60`
+
+## Optimal for testing
 Not on pi: `-i 15 -c "cell phone"`
 
 On pi: `-i 1 -c "cell phone" -pi` 

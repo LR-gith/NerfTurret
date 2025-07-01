@@ -5,6 +5,9 @@ import io
 
 SERVER_URL = 'http://192.168.188.112:5555'
 
+current_iteration = 0
+print_iteration = 1
+
 def initializeConnection():
     attempts = 0
     max_attempts = 10
@@ -33,6 +36,7 @@ def reconnect():
         exit("Failed to reconnect after multiple attempts.")
 
 def update_color_detection(frame, mask, values):
+    global current_iteration
     image_success, encoded_image = cv2.imencode('.jpg', frame)
     mask_success, encoded_mask = cv2.imencode('.jpg', mask)
 
@@ -50,15 +54,18 @@ def update_color_detection(frame, mask, values):
 
 
     responseJson = response.json()
-    print(f"confidence:, {responseJson["confidence"]}, "
-          f"x: {responseJson["x"]}, y: {responseJson["y"]}, "
-          f"relative_x_angle: {responseJson["relative_x_angle"]}, "
-          f"relative_y_angle: {responseJson["relative_y_angle"]},"
-          f"absolut_x_angle: {responseJson["absolut_x_angle"]},"
-          f"absolut_y_angle: {responseJson["absolut_y_angle"]},")
+    if current_iteration % print_iteration == 0:
+        print(f"confidence:, {responseJson["confidence"]}, "
+              f"x: {responseJson["x"]}, y: {responseJson["y"]}, "
+              f"relative_x_angle: {responseJson["relative_x_angle"]}, "
+              f"relative_y_angle: {responseJson["relative_y_angle"]},"
+              f"absolut_x_angle: {responseJson["absolut_x_angle"]},"
+              f"absolut_y_angle: {responseJson["absolut_y_angle"]},")
+    current_iteration += 1
     return True
 
 def update_object_detection(frame, values):
+    global current_iteration
     success, encoded_image = cv2.imencode('.jpg', frame)
     if not success:
         print("Could not encode image")
@@ -72,12 +79,14 @@ def update_object_detection(frame, values):
 
 
     responseJson = response.json()
-    print(f"confidence:, {responseJson["confidence"]}, "
-          f"x: {responseJson["x"]}, y: {responseJson["y"]}, "
-          f"relative_x_angle: {responseJson["relative_x_angle"]}, "
-          f"relative_y_angle: {responseJson["relative_y_angle"]},"
-          f"absolut_x_angle: {responseJson["absolut_x_angle"]},"
-          f"absolut_y_angle: {responseJson["absolut_y_angle"]},")
+    if current_iteration % print_iteration == 0:
+        print(f"confidence:, {responseJson["confidence"]}, "
+              f"x: {responseJson["x"]}, y: {responseJson["y"]}, "
+              f"relative_x_angle: {responseJson["relative_x_angle"]}, "
+              f"relative_y_angle: {responseJson["relative_y_angle"]},"
+              f"absolut_x_angle: {responseJson["absolut_x_angle"]},"
+              f"absolut_y_angle: {responseJson["absolut_y_angle"]},")
+    current_iteration += 1
     return True
 
 def get_value_from_server():
@@ -109,6 +118,11 @@ def ping():
         return True
     else:
         return False
+
+def setPrintIteration(iteration):
+    global print_iteration
+    print_iteration = iteration
+
 
 if __name__ == '__main__':
     raise NotImplementedError("Not supported to run Client as main")

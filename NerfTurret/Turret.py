@@ -5,11 +5,12 @@ import webcolors
 
 class Turret:
 
-    def __init__(self, controller, camera, target_class, camera_size=(640, 480), camera_bandwidth=(90, 70), show_img=False):
+    def __init__(self, controller, camera, target_class, color_range, camera_size=(640, 480), camera_bandwidth=(90, 70), show_img=False):
         self.controller = controller
         self.camera = camera
         try:
             self.targetClass = webcolors.name_to_rgb(target_class)
+            self.color_range = color_range
             self.detecting_color = True
         except ValueError:
             self.targetClass = target_class
@@ -105,7 +106,7 @@ class Turret:
         if contours:
             largest_contour = max(contours, key=cv2.contourArea)
             area = cv2.contourArea(largest_contour)
-            if area > 10:
+            if area > 100:
                 conf = 1
                 x, y, w, h = cv2.boundingRect(largest_contour)
                 x_mid = x + (w// 2)
@@ -128,11 +129,11 @@ class Turret:
         return frame, mask, values
 
 
-    def get_dynamic_rgb_bounds(self, rgb_color, bound: int = 80):
+    def get_dynamic_rgb_bounds(self, rgb_color):
         rgb_color = np.array(rgb_color)
 
-        lower_rgb = np.clip(rgb_color - bound, 0, 255)
-        upper_rgb = np.clip(rgb_color + bound, 0, 255)
+        lower_rgb = np.clip(rgb_color - self.color_range, 0, 255)
+        upper_rgb = np.clip(rgb_color + self.color_range, 0, 255)
 
         return lower_rgb, upper_rgb
 
