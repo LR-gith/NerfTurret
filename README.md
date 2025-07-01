@@ -1,5 +1,5 @@
 ## Running the code
-Starting the Server: `/Nerfturret/Server/` + `py Server.py`(windows) or `python3 Server.py`(linux)
+Starting the server: `/Nerfturret/Server/` + `py Server.py`(windows) or `python3 Server.py`(linux)
 
 Running the turret: `/Nerfturret/Server/` + `py main.py`(windows) or `python3 Server.py`(linux) + arguments
 
@@ -37,8 +37,3 @@ To detect a color enter the name of one of the standard CSS3 colors.
 See all colors that can be detected ->  [colors](https://www.w3schools.com/cssref/css_colors.php)
 
 Example: `-c "red"`, `-c "lightblue"`, `-c "blue" -cr 60`
-
-## Optimal for testing
-Not on pi: `-i 15 -c "cell phone"`
-
-On pi: `-i 1 -c "cell phone" -pi` 
