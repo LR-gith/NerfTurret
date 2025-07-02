@@ -40,7 +40,7 @@ color_range = args.color_range
 show_img = args.showImg
 verbose = args.verbose
 
-print("iteration: ",print_iteration , ", class: ",target_class ,", show image: ", show_img, ", verbose: ", verbose)
+print("iteration: ",print_iteration , ", class: ", target_class, ", color_range", color_range, "show image: ", show_img, ", verbose: ", verbose)
 
 
 controller = PiController(X_SERVO_PIN, Y_SERVO_PIN, CHARGE_PIN, SHOOT_PIN, verbose=verbose)

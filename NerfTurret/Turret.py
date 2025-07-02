@@ -70,8 +70,7 @@ class Turret:
             y_angle = int(-(self.camera_height_angle / self.camera_height) * (y - self.camera_height / 2))
             self.controller.align(x_angle, y_angle)
             cv2.circle(frame, (x, y), radius=1, color=(0, 0, 255), thickness=2)
-        else:
-            self.controller.defaultServoPosition()
+
 
         if self.showImg:
             cv2.imshow("Object detection", frame)
@@ -85,8 +84,8 @@ class Turret:
     def detect_color(self):
         x_mid = None
         y_mid = None
-        x_angle = None
-        y_angle = None
+        x_angle = 0
+        y_angle = 0
         conf = -1
 
         lower_rgb, upper_rgb = self.get_dynamic_rgb_bounds(rgb_color=self.targetClass)
@@ -115,8 +114,7 @@ class Turret:
                 y_angle = int(-(self.camera_height_angle / self.camera_height) * (y - self.camera_height / 2))
                 self.controller.align(x_angle, y_angle)
                 cv2.circle(frame, (x_mid, y_mid), radius=1, color=(0, 0, 255), thickness=2)
-            else:
-                self.controller.defaultServoPosition()
+
 
         if self.showImg:
             cv2.imshow("Mask", mask)

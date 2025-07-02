@@ -3,7 +3,7 @@ import cv2
 import requests
 import io
 
-SERVER_URL = 'http://192.168.188.112:5555'
+SERVER_URL = 'http://172.20.10.2:5555'
 
 current_iteration = 0
 print_iteration = 1
