@@ -5,7 +5,8 @@ import requests
 import io
 from dotenv import load_dotenv
 
-load_dotenv('../.env')
+env_path = os.path.join(os.path.dirname(__file__), '..', '.env')
+load_dotenv(env_path)
 SERVER_IP=os.getenv('SERVER_IP')
 PORT=os.getenv('PORT')
 SERVER_URL = f'http://{SERVER_IP}:{PORT}'

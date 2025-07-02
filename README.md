@@ -1,7 +1,21 @@
 ## Running the code
-Starting the server: `/Nerfturret/Server/` + `py Server.py`(windows) or `python3 Server.py`(linux)
-
-Running the turret: `/Nerfturret/Server/` + `py main.py`(windows) or `python3 Server.py`(linux) + arguments
+1. Install all packages needed:
+   ```bash
+   pip3 install Flask-SocketIO==5.5.1
+   pip3 install keyboard==0.13.5
+   pip3 install python-dotenv==1.1.1
+   pip3 install ultralytics==8.3.152
+   pip3 install webcolors==24.11.1
+   ```
+2. Add a .env file to the project directory `/your/path/Nerfturret/.env`. Add a parameter SERVER_IP and PORT. The file should look like this:
+    ```dotenv
+    #Replace with your local server ip and the port you want to use
+    SERVER_IP=127.0.0.1
+    PORT=5555
+    ```
+3. Make sure both devices(server and client) are connected to the same network
+4. Starting the server: `/Nerfturret/Server/` + `py Server.py`(windows) or `python3 Server.py`(linux)
+5. Running the turret: `/Nerfturret/Server/` + `py main.py`(windows) or `python3 Server.py`(linux) + [arguments](./README.md#arguments)
 
 ## Arguments
 `-h`, `--help`: Shows the arguments and their descriptions.

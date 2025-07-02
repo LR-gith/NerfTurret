@@ -152,6 +152,7 @@ def get_value():
     return jsonify({"current_value": stored_value['value']}), 200
 
 if __name__ == '__main__':
-    load_dotenv('../.env')
-    PORT = os.getenv('PORT')
+    env_path = os.path.join(os.path.dirname(__file__), '..', '.env')
+    load_dotenv(env_path)
+    PORT = int(os.getenv('PORT'))
     app.run(host='0.0.0.0', port=PORT ,debug=True)
