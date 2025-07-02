@@ -333,7 +333,7 @@ h1 {
 
 #live-mask {
     border: #0D0D0D solid 2px;
-    display: none;
+    display: block;
 }
 
 #crosshair-container {
@@ -342,7 +342,7 @@ h1 {
     border: #0066cc solid 2px;
     width: 640px;
     height: 480px;
-    display: block;
+    display: none;
 }
 
 #crosshair-horizontal-line {
@@ -352,7 +352,7 @@ h1 {
     height: 1px;
     left: 0;
     top: 240px;
-    display: block;
+    display: none;
 }
 
 #crosshair-vertical-line {
@@ -362,5 +362,5 @@ h1 {
     width: 1px;
     left: 340px;
     top: 0;
-    display: block;
+    display: none;
 }
