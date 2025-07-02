@@ -1,9 +1,14 @@
+import os
 import time
 import cv2
 import requests
 import io
+from dotenv import load_dotenv
 
-SERVER_URL = 'http://172.20.10.2:5555'
+load_dotenv('../.env')
+SERVER_IP=os.getenv('SERVER_IP')
+PORT=os.getenv('PORT')
+SERVER_URL = f'http://{SERVER_IP}:{PORT}'
 
 current_iteration = 0
 print_iteration = 1

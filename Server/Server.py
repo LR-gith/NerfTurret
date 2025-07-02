@@ -1,8 +1,12 @@
+import os
+
 import cv2
 import numpy as np
 from flask import Flask, request, jsonify, render_template, send_file, send_from_directory
 from flask_socketio import SocketIO, emit
 import io
+from dotenv import load_dotenv
+
 
 app = Flask(__name__)
 socketio = SocketIO(app)
@@ -148,4 +152,6 @@ def get_value():
     return jsonify({"current_value": stored_value['value']}), 200
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5555 ,debug=True)
+    load_dotenv('../.env')
+    PORT = os.getenv('PORT')
+    app.run(host='0.0.0.0', port=PORT ,debug=True)
