@@ -3,6 +3,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const imgElement = document.getElementById('live-image');
     const maskElement = document.getElementById('live-mask');
     const logContainer = document.getElementById('log-container');
+    const crosshairContainer = document.getElementById('crosshair-container');
+    const crosshairHorizontal = document.getElementById('crosshair-horizontal-line');
+    const crosshairVertical = document.getElementById('crosshair-vertical-line');
     let lastUpdateTime_img = 0;
     let lastUpdateTime_mask = 0;
 
@@ -25,6 +28,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateBothImages() {
+        crosshairContainer.style.display = 'none';
+        crosshairHorizontal.style.display = 'none';
+        crosshairVertical.style.display = 'none';
+        maskElement.style.display = 'block'
         const now = Date.now();
         if (now - lastUpdateTime_img > 10) {
             imgElement.src = '/get_image?' + now;
@@ -63,11 +70,23 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function updateSecondImageToBox(values){
+        maskElement.style.display = 'none';
+        crosshairContainer.style.display = 'block';
+        crosshairHorizontal.style.display = 'block';
+        crosshairVertical.style.display = 'block';
+        const x = values.x;
+        const y = values.y;
+        crosshairHorizontal.style.top = Math.min(Math.max(y, 0), 480) + 'px';
+        crosshairVertical.style.left = Math.min(Math.max(x, 0), 640) + 'px';
+    }
+
     socket.on('updateObjectDetection', (data) => {
         if (data.image_updated) {
             updateImage();
         }
         if (data.values) {
+            updateSecondImageToBox(data.values);
             updateValues(data.values);
         }
     });
