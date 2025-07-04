@@ -105,6 +105,57 @@ def get_value_from_server():
     print(f"Current value: {responseJson["current_value"]}")
     return True
 
+def updateOnlyImage(frame):
+    success, encoded_image = cv2.imencode('.jpg', frame)
+    if not success:
+        print("Could not encode image")
+        return False
+    image_bytes = io.BytesIO(encoded_image.tobytes())
+    image = {'image': ('frame.jpg', image_bytes, 'image/jpeg')}
+    try:
+        requests.post(f"{SERVER_URL}/updateOnlyImage", files=image)
+    except requests.exceptions.ConnectionError:
+        return reconnect()
+
+    return True
+
+def getColorSelections():
+    try:
+        response = requests.get(f"{SERVER_URL}/get_color_selection_list")
+    except requests.exceptions.ConnectionError:
+        return reconnect(), None
+
+    responseJson = response.json()
+    if responseJson["status"] == "ok":
+        return True, responseJson["colors"]
+    else:
+        return False, None
+
+def clearColorSelections():
+    try:
+        response = requests.get(f"{SERVER_URL}/clear_color_selection")
+    except requests.exceptions.ConnectionError:
+        return reconnect()
+
+    responseJson = response.json()
+    if not responseJson["status"] and not responseJson["colors"]:
+        return True
+    else:
+        return False
+
+def redirectToColorSelection():
+    try:
+        response = requests.get(f"{SERVER_URL}/redirectToColorSelection")
+    except requests.exceptions.ConnectionError:
+        return reconnect()
+
+    responseJson = response.json()
+    if responseJson["status"] == "redirected":
+        return True
+    else:
+        return False
+
+
 def log_to_server(message):
     try:
         requests.post(f"{SERVER_URL}/log", json={"message": message})

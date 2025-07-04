@@ -1,5 +1,7 @@
 import threading
 import argparse
+import time
+
 import Client
 
 # initializes connection to the server
@@ -26,6 +28,7 @@ parser.add_argument("-c", "--class", type=str, help="detects this object class C
 parser.add_argument("-cr", "--color_range", type=int, help="range above and below detected color", default=40)
 parser.add_argument("-img", "--showImg", action="store_true", help="When used an window will display the camera after detection")
 parser.add_argument("-v", "--verbose", action="store_true", help="Gives extra terminal output")
+parser.add_argument("-p", "--pickColor", action="store_true", help="When used lets you pick colors yourself")
 args = parser.parse_args()
 
 
@@ -39,6 +42,7 @@ target_class = args.targetClass
 color_range = args.color_range
 show_img = args.showImg
 verbose = args.verbose
+selector_running = args.pickColor
 
 print("iteration: ",print_iteration , ", class: ", target_class, ", color_range", color_range, "show image: ", show_img, ", verbose: ", verbose)
 
@@ -50,6 +54,28 @@ Client.setPrintIteration(print_iteration)
 
 exit_thread = threading.Thread(target=wait_for_exit, daemon=True)
 exit_thread.start()
+
+Client.clearColorSelections()
+if selector_running:
+    Client.redirectToColorSelection()
+
+while selector_running:
+    ret, frame = camera.read()
+    if not Client.updateOnlyImage(frame):
+        print("Failed to update image")
+        running = False
+
+    valid, colors = Client.getColorSelections()
+
+    if valid:
+        selector_running = False
+        print(colors)
+        target_class = turret.color_mean(colors)
+        print(target_class)
+        turret.setTargetClassToRGBValue(target_class,color_range)
+    else:
+        time.sleep(0.5)
+
 
 while running:
     frame, mask, values = turret.run()

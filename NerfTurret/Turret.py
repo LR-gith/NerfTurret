@@ -135,6 +135,27 @@ class Turret:
 
         return lower_rgb, upper_rgb
 
+    def color_mean(self, hexColors):
+        rgb_red = 0
+        rgb_green = 0
+        rgb_blue = 0
+        for color in hexColors:
+            rgbColor = webcolors.hex_to_rgb(color)
+            rgb_red += rgbColor[0]
+            rgb_green += rgbColor[1]
+            rgb_blue += rgbColor[2]
+        size = len(hexColors)
+        rgb_red = rgb_red // size
+        rgb_green = rgb_green // size
+        rgb_blue = rgb_blue // size
+        color_mean = webcolors.rgb_to_hex((rgb_red,rgb_green,rgb_blue))
+        return (rgb_red,rgb_green,rgb_blue)
+
+    def setTargetClassToRGBValue(self, target_class, color_range):
+        self.targetClass = target_class
+        self.color_range = color_range
+        self.detecting_color=True
+
 
     def stop(self):
         if not self.showImg:

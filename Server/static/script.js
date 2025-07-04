@@ -100,6 +100,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    socket.on('redirectToColorSelection', () => {
+        window.location.assign("/colorSelector");
+    })
+
     socket.on('log', (message) => {
         addLog(message)
     })

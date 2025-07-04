@@ -2,7 +2,7 @@ import os
 
 import cv2
 import numpy as np
-from flask import Flask, request, jsonify, render_template, send_file, send_from_directory
+from flask import Flask, request, jsonify, render_template, send_file, send_from_directory, redirect, url_for
 from flask_socketio import SocketIO, emit
 import io
 from dotenv import load_dotenv
@@ -11,7 +11,8 @@ from dotenv import load_dotenv
 app = Flask(__name__)
 socketio = SocketIO(app)
 stored_value = {"value": "No value set yet"}
-current_frame = None
+redirectToColorSelection = {"redirect": False}
+current_image = None
 current_mask = None
 current_values = {
     'conf': "No value set yet",
@@ -22,9 +23,14 @@ current_values = {
     'absolut_x_angle': "No value set yet",
     'absolut_y_angle': "No value set yet"
 }
+color_selections = {"status" : "", "colors" : []}
 @app.route('/')
 def homepage():
     return render_template('index.html', value=stored_value['value'])
+
+@app.route('/colorSelector')
+def colorSelector():
+    return render_template('colorSelector.html')
 
 @app.route('/ping', methods=['GET'])
 def ping():
@@ -104,6 +110,53 @@ def update_color_detection():
         "absolut_y_angle": current_values['absolut_y_angle']
     }), 200
 
+@app.route('/updateOnlyImage',methods=['POST'])
+def updateOnlyImage():
+    global current_image
+    if 'image' not in request.files:
+        return jsonify({"error": "Missing one of the images in request"}), 400
+
+    image_file = request.files['image']
+    img_bytes = image_file.read()
+    image_array = np.frombuffer(img_bytes, np.uint8)
+    current_image = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
+    return jsonify({"status": "ok"}), 200
+
+@app.route('/get_color_selection_list')
+def get_color_selection_list():
+    global color_selections
+    if not color_selections["colors"]:
+        color_selections["status"] = "waiting"
+    else:
+        color_selections["status"] = "ok"
+    return jsonify(color_selections)
+
+@app.route('/clear_color_selection')
+def clear_color_selection():
+    global color_selections
+    color_selections["status"] = ""
+    color_selections["colors"] = []
+    return jsonify(color_selections)
+
+@app.route('/updateColorSelections', methods=['POST'])
+def updateColorSelections():
+    global color_selections
+    json = request.get_json()
+    if 'colors' not in json:
+        return jsonify({"error": "Missing color data"}), 400
+
+    color_selections["colors"] = json["colors"]
+    return jsonify({"status": "ok"})
+
+
+@app.route('/redirectToColorSelection', methods=['GET'])
+def redirectToColorSelection():
+    try:
+        socketio.emit('redirectToColorSelection')
+    except Exception as exception:
+        print(exception)
+        return jsonify({"status": "failed"})
+    return jsonify({"status": "redirected"})
 
 @app.route('/get_image')
 def get_image():
