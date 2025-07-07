@@ -29,6 +29,9 @@ For more information see [object detection](./README.md#object-detection) and [c
 `-cr`, `-color_range`: The range used to detect around the color. Default: `40`  
 For more information see [color detection](./README.md#color-detection)
 
+`-p`, `--pickColor`: If used the user is redirected from the dashboard to a new site. On this site the user can
+pick colors. The mean of the selected colors will be detected. Affected by `-cr` 
+
 `-img`, `--show_image`: If used, displays the camera output after detection in a new window. Same as display on website. 
 
 `-v`, `--verbose`: If used, gives more output in the terminal. Affected by `-i`.
