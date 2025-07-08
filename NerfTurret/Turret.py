@@ -1,159 +1,195 @@
+import io
+import os
+import sys
+import threading
+import argparse
+import time
+
 import cv2
-from ultralytics import YOLO
-import numpy as np
 import webcolors
 
-class Turret:
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+import Client
 
-    def __init__(self, controller, camera, target_class, color_range, camera_size=(640, 480), camera_bandwidth=(90, 70), show_img=False):
-        self.controller = controller
-        self.camera = camera
-        try:
-            self.targetClass = webcolors.name_to_rgb(target_class)
-            self.color_range = color_range
-            self.detecting_color = True
-        except ValueError:
-            self.targetClass = target_class
-            self.detecting_color = False
+parser = argparse.ArgumentParser()
+parser.add_argument("-i", "--iteration", type=int, help="output after I iterations", default=5)
+parser.add_argument("-c", "--class", type=str, help="detects this object class C", default="person", dest="targetClass")
+parser.add_argument("-cr", "--color_range", type=int, help="range above and below detected color", default=40)
+parser.add_argument("-img", "--showImg", action="store_true", help="When used an window will display the camera after detection")
+parser.add_argument("-v", "--verbose", action="store_true", help="Gives extra terminal output")
+parser.add_argument("-p", "--pickColor", action="store_true", help="When used lets you pick colors yourself")
+parser.add_argument("-rw", "--runWebsite", action="store_true", help="When set to false the website isn't used")
+args = parser.parse_args()
 
-        self.camera_width = camera_size[0]
-        self.camera_height = camera_size[1]
-        self.camera_width_angle = camera_bandwidth[0]
-        self.camera_height_angle = camera_bandwidth[1]
-        self.showImg = show_img
-        self.__model = YOLO("yoloWeights/yolov5su.pt")
-        self.counter = 0
+print_iteration = args.iteration
+target_class = args.targetClass
+color_range = args.color_range
+show_img = args.showImg
+verbose = args.verbose
+selector_running = args.pickColor
+website_running = args.runWebsite
 
 
-    def run(self):
-        if self.detecting_color:
-            frame, mask, values =  self.detect_color()
+# initializes connection to the server
+if website_running:
+    if not Client.initializeConnection():
+        exit("Failed to connect to Server")
+
+from Camera import Camera
+from PiController import PiController, running_on_pi
+from Detection import ObjectDetection
+from Detection import ColorDetection
+
+if not running_on_pi and website_running:
+    Client.log_to_server("Turret isn't operating on pi!")
+    Client.log_to_server("No GPIO output will be done!")
+elif not running_on_pi and not website_running:
+    print("Turret isn't operating on pi!")
+    print("No GPIO output will be done!")
+
+
+X_SERVO_PIN = 18
+Y_SERVO_PIN = 19
+CHARGE_PIN = 2
+SHOOT_PIN = 3
+running = True
+counter = 0
+
+
+def wait_for_exit():
+    global running
+    input("Press [Enter] to exit...\n")
+    running = False
+
+print("iteration: ",print_iteration , ", class: ", target_class, ", color_range: ", color_range, ", show image: ", show_img, ", verbose: ", verbose, ", pickColor: ", selector_running, ", runWebsite: ", website_running)
+
+
+controller = PiController(X_SERVO_PIN, Y_SERVO_PIN, CHARGE_PIN, SHOOT_PIN, verbose=verbose)
+
+camera = Camera(0)
+
+
+exit_thread = threading.Thread(target=wait_for_exit, daemon=True)
+exit_thread.start()
+
+
+if website_running:
+    Client.clearColorSelections()
+    Client.setPrintIteration(print_iteration)
+    if selector_running:
+        Client.redirectToColorSelection()
+
+
+    while selector_running:
+        ret, frame = camera.read()
+        if not ret:
+            print("Failed to grab frame!")
+            break
+
+        if not Client.updateOnlyImage(frame):
+            print("Failed to update image")
+            running = False
+
+        valid, colors = Client.getColorSelections()
+
+        if valid:
+            selector_running = False
+            print(colors)
+            target_class = colors
         else:
-            frame, mask, values =  self.detect_object()
+            time.sleep(0.5)
 
-        return frame, mask, values
+if ObjectDetection.isClass(target_class):
+    detector = ObjectDetection.ObjectDetection(target_class=target_class, show_img=show_img)
+else:
+    detector = ColorDetection.ColorDetection(target_class=target_class, color_range=color_range, show_img=show_img)
 
-
-    def detect_object(self):
-        x = None
-        y = None
-        x_angle = 0
-        y_angle = 0
-
-        ret, frame = self.camera.read()
-
-        if not ret:
-            print("Failed to grab frame!")
-            return -1, 0, 0
-
-        results = self.__model(frame, verbose=False)[0]
-        highestConf = -1
-        highestConfBox = None
-        for box in results.boxes:
-            cls_id = int(box.cls[0])
-            label = self.__model.names[cls_id]
-
-            if label.lower() == self.targetClass.lower():
-                conf = float(box.conf[0])
-                if conf > highestConf:
-                    highestConf = conf
-                    highestConfBox = box
-
-        if highestConfBox is not None:
-            x1, y1, x2, y2 = map(int, highestConfBox.xyxy[0])
-            x = (x1 + x2) // 2
-            y = (y1 + y2) // 2
-            x_angle = int((self.camera_width_angle / self.camera_width) * (x - self.camera_width / 2))
-            y_angle = int(-(self.camera_height_angle / self.camera_height) * (y - self.camera_height / 2))
-            self.controller.align(x_angle, y_angle)
-            cv2.circle(frame, (x, y), radius=1, color=(0, 0, 255), thickness=2)
+print(detector.target_class)
 
 
-        if self.showImg:
-            cv2.imshow("Object detection", frame)
-            cv2.waitKey(1)
-        values = {"conf": np.round(highestConf, 3), "x": x, "y": y, "relative_x_angle": x_angle,
-                  "relative_y_angle": y_angle, "absolut_x_angle": self.controller.getXServoAngle(),
-                  "absolut_y_angle": self.controller.getYServoAngle()}
-        return frame, None, values
+def with_website(camera_frame):
+
+    success, encoded_image = cv2.imencode('.jpg', camera_frame)
+    if not success:
+        print("Could not encode image")
+        return False
+    image_bytes = io.BytesIO(encoded_image.tobytes())
+    image = {'image': ('frame.jpg', image_bytes, 'image/jpeg')}
+    target_class_copy = detector.target_class
+    if detector.__class__.__name__ == "ColorDetection":
+        try:
+            target_class_copy = webcolors.rgb_to_hex(detector.target_class)
+        except ValueError:
+            print("Isn't a color")
+
+    data = {"detector_class" : detector.__class__.__name__,
+            "detector_target_class" : target_class_copy,
+            "detector_color_range" : detector.color_range,
+            "detector_camera_width" : detector.camera_width,
+            "detector_camera_height" : detector.camera_height,
+            "detector_camera_width_angle" : detector.camera_width_angle,
+            "detector_camera_height_angle" : detector.camera_height_angle,
+            "detector_showImg" : detector.showImg,
+            "absolut_x_angle" : controller.getXServoAngle(),
+            "absolut_y_angle" : controller.getYServoAngle()}
+
+    detection_frame, mask, values = Client.calculate_detection(data, image)
+
+    x_Angle = values['relative_x_angle']
+    y_Angle = values['relative_y_angle']
+    absolut_x_angle = values['absolut_x_angle']
+    absolut_y_angle = values['absolut_y_angle']
+
+    controller.align(x_Angle, y_Angle)
+    if absolut_x_angle != controller.xServoAngle or absolut_y_angle != controller.yServoAngle:
+        raise Exception("Absolut angles from Server and Turret are not synchronized")
+
+    confidence = values["conf"]
+    if mask is not None and mask.size > 0:
+        Client.update_color_detection(detection_frame, mask, values)
+    else:
+        Client.update_object_detection(detection_frame, values)
+
+    if counter % print_iteration == 0:
+        if confidence == -1:
+            Client.log_to_server(f"No {target_class_copy} object detected")
+        else:
+            Client.log_to_server(f"Detected {target_class_copy} object")
 
 
-    def detect_color(self):
-        x_mid = None
-        y_mid = None
-        x_angle = 0
-        y_angle = 0
-        conf = -1
+def without_website(camera_frame):
+    frame, mask, values = detector.detect(camera_frame)
+    confidence = values["conf"]
+    x_Angle = values['relative_x_angle']
+    y_Angle = values['relative_y_angle']
+    controller.align(x_Angle, y_Angle)
+    values['absolut_x_angle'] = controller.getXServoAngle()
+    values['absolut_y_angle'] = controller.getYServoAngle()
+    if counter % print_iteration == 0:
+        if confidence == -1:
+            print(f"No {target_class} object detected")
+        else:
+            print(f"Detected {target_class} object")
 
-        lower_rgb, upper_rgb = self.get_dynamic_rgb_bounds(rgb_color=self.targetClass)
+while running:
+    ret, frame = camera.read()
+    if not ret:
+        print("Failed to grab frame!")
+        break
 
+    if website_running:
+        with_website(frame)
+    else:
+        without_website(frame)
 
-        ret, frame = self.camera.read()
-
-        if not ret:
-            print("Failed to grab frame!")
-            return -1, 0, 0
-
-        rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        mask = cv2.inRange(rgb, lower_rgb, upper_rgb)
-
-        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-        if contours:
-            largest_contour = max(contours, key=cv2.contourArea)
-            area = cv2.contourArea(largest_contour)
-            if area > 100:
-                conf = 1
-                x, y, w, h = cv2.boundingRect(largest_contour)
-                x_mid = x + (w// 2)
-                y_mid = y + (h // 2)
-                x_angle = int((self.camera_width_angle / self.camera_width) * (x - self.camera_width / 2))
-                y_angle = int(-(self.camera_height_angle / self.camera_height) * (y - self.camera_height / 2))
-                self.controller.align(x_angle, y_angle)
-                cv2.circle(frame, (x_mid, y_mid), radius=1, color=(0, 0, 255), thickness=2)
+    counter += 1
 
 
-        if self.showImg:
-            cv2.imshow("Mask", mask)
-            cv2.imshow("Detection", frame)
-            cv2.waitKey(1)
-
-        values = {"conf": conf, "x": x_mid, "y": y_mid, "relative_x_angle": x_angle,
-                  "relative_y_angle": y_angle, "absolut_x_angle": self.controller.getXServoAngle(),
-                  "absolut_y_angle": self.controller.getYServoAngle()}
-        return frame, mask, values
+detector.stop()
+camera.stop()
+controller.stop()
 
 
-    def get_dynamic_rgb_bounds(self, rgb_color):
-        rgb_color = np.array(rgb_color)
-
-        lower_rgb = np.clip(rgb_color - self.color_range, 0, 255)
-        upper_rgb = np.clip(rgb_color + self.color_range, 0, 255)
-
-        return lower_rgb, upper_rgb
-
-    def color_mean(self, hexColors):
-        rgb_red = 0
-        rgb_green = 0
-        rgb_blue = 0
-        for color in hexColors:
-            rgbColor = webcolors.hex_to_rgb(color)
-            rgb_red += rgbColor[0]
-            rgb_green += rgbColor[1]
-            rgb_blue += rgbColor[2]
-        size = len(hexColors)
-        rgb_red = rgb_red // size
-        rgb_green = rgb_green // size
-        rgb_blue = rgb_blue // size
-        return (rgb_red,rgb_green,rgb_blue)
-
-    def setTargetClassToRGBValue(self, target_class, color_range):
-        self.targetClass = target_class
-        self.color_range = color_range
-        self.detecting_color=True
-
-
-    def stop(self):
-        if not self.showImg:
-            cv2.destroyAllWindows()
-        print("Stopping the Turret...")
+#76,100 auf 100cm
+#auf breite 70°
+#auf höhe 90°

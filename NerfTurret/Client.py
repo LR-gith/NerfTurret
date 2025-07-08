@@ -1,6 +1,8 @@
+import base64
 import os
 import time
 import cv2
+import numpy as np
 import requests
 import io
 from dotenv import load_dotenv
@@ -69,6 +71,28 @@ def update_color_detection(frame, mask, values):
               f"absolut_y_angle: {responseJson["absolut_y_angle"]},")
     current_iteration += 1
     return True
+
+def calculate_detection(data, image):
+    try:
+        response = requests.post(f"{SERVER_URL}/calculateDetection", data=data, files=image)
+    except requests.exceptions.ConnectionError:
+        return reconnect()
+
+    responseJson = response.json()
+    frame = responseJson['frame']
+    mask = responseJson['mask']
+    values = responseJson['values']
+
+    frame_bytes = base64.b64decode(frame)
+    frame_decoded = cv2.imdecode(np.frombuffer(frame_bytes, np.uint8), cv2.IMREAD_COLOR)
+    if mask is not None:
+        mask_bytes = base64.b64decode(mask)
+        mask_decoded = cv2.imdecode(np.frombuffer(mask_bytes, np.uint8), cv2.IMREAD_COLOR)
+    else:
+        mask_decoded = None
+
+    return frame_decoded, mask_decoded, values
+
 
 def update_object_detection(frame, values):
     global current_iteration

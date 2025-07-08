@@ -1,4 +1,6 @@
+import base64
 import os
+import sys
 
 import cv2
 import numpy as np
@@ -6,6 +8,10 @@ from flask import Flask, request, jsonify, render_template, send_file, send_from
 from flask_socketio import SocketIO, emit
 import io
 from dotenv import load_dotenv
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from Detection.ColorDetection import ColorDetection
+from Detection.ObjectDetection import ObjectDetection
 
 
 app = Flask(__name__)
@@ -109,6 +115,44 @@ def update_color_detection():
         "absolut_x_angle": current_values['absolut_x_angle'],
         "absolut_y_angle": current_values['absolut_y_angle']
     }), 200
+
+@app.route('/calculateDetection', methods=['POST'])
+def calculateDetection():
+    image_file = request.files['image']
+    img_bytes = image_file.read()
+    image_array = np.frombuffer(img_bytes, np.uint8)
+    frame = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
+
+    detector_class = str(request.form.get('detector_class'))
+    detector_target_class = str(request.form.get('detector_target_class'))
+    detector_color_range = int(request.form.get('detector_color_range'))
+    detector_camera_width = int(request.form.get("detector_camera_width"))
+    detector_camera_height = int(request.form.get("detector_camera_height"))
+    detector_camera_width_angle = int(request.form.get("detector_camera_width_angle"))
+    detector_camera_height_angle = int(request.form.get("detector_camera_height_angle"))
+    detector_showImg = bool(request.form.get('detector_showImg'))
+    absolut_x_angle = int(request.form.get('absolut_x_angle'))
+    absolut_y_angle = int(request.form.get('absolut_y_angle'))
+
+    if  detector_class == "ObjectDetection":
+        detector = ObjectDetection(detector_target_class, (detector_camera_width, detector_camera_height), (detector_camera_width_angle, detector_camera_height_angle), detector_showImg)
+    elif detector_class == "ColorDetection":
+        detector = ColorDetection(detector_target_class, detector_color_range, (detector_camera_width, detector_camera_height), (detector_camera_width_angle, detector_camera_height_angle), detector_showImg)
+    else:
+        raise Exception("Unrecognized class for detector")
+    result_frame, mask, values = detector.detect(frame)
+
+    values['absolut_x_angle'] = int(np.clip(absolut_x_angle + values['relative_x_angle'], 0, 180))
+    values['absolut_y_angle'] = int(np.clip(absolut_y_angle + values['relative_y_angle'], 60, 120))
+    encoded_frame = encode_image(result_frame)
+    if mask is not None: encoded_mask = encode_image(mask)
+    else: encoded_mask = None
+
+    return jsonify({"frame" : encoded_frame, "mask" : encoded_mask, "values" : values}), 200
+
+def encode_image(img):
+    _, buffer = cv2.imencode('.jpg', img)
+    return base64.b64encode(buffer).decode('utf-8')
 
 @app.route('/updateOnlyImage',methods=['POST'])
 def updateOnlyImage():
