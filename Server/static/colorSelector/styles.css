@@ -1,0 +1,131 @@
+body {
+    display: flex;
+    flex-direction: row;
+    font-family: monospace;
+    margin: 0;
+    padding: 20px;
+    justify-content: space-evenly;
+    background-color: #0D0D0D;
+}
+
+.left-side {
+    display: flex;
+    flex: 3;
+    flex-direction: column;
+    align-items: center;
+}
+
+.image-container {
+    margin-top: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#image {
+    cursor: crosshair;
+}
+
+.button-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+#confirm-button,
+#button-update-image {
+    flex: 1;
+    max-width: 200px;
+    margin: 20px;
+    padding: 10px;
+    color: #d4d4d4;
+    background-color: #0D0D0D;
+    font-size: 18px;
+    border: #0033FF 2px solid;
+    border-radius: 4px;
+}
+
+#remove-all-button {
+    flex: 1;
+    max-width: 200px;
+    margin: 20px;
+    padding: 10px;
+    color: red;
+    background-color: #0D0D0D;
+    font-size: 18px;
+    border: red 2px solid;
+    border-radius: 4px;
+}
+
+#remove-all-button:hover {
+    color: white;
+    background-color: red;
+}
+
+#confirm-button:hover,
+#button-update-image:hover {
+    background-color: #0033FF;
+    color: white;
+}
+
+.right-side {
+    flex: 1;
+    flex-direction: column;
+    margin-left: 20px;
+    background-color: #0D0D0D;
+    color: #f0f0f0;
+    padding: 15px;
+    overflow-y: auto;
+    height: calc(100vh - 40px);
+    border-left: #0033FF solid;
+}
+
+#color-selection-container {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    font-family: monospace;
+    white-space: pre;
+}
+
+.color-entry {
+    display: flex;
+    flex-direction: row;
+    font-size: 18px;
+    margin: 5px;
+    border: 1px solid #0066cc;
+    padding: 8px;
+    justify-content: center;
+}
+
+.color-count {
+    flex: 1;
+    color: #6a9955;
+}
+
+.color-display {
+    margin: 3px 20px;
+    flex: 5;
+    fill: #0033FF;
+}
+
+.del-color-entry {
+    width: 40px;
+    background-color: #0D0D0D;
+    border: 2px solid red;
+    color: red;
+    margin-left: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+    font-size: 10px;
+}
+
+
+.del-color-entry:hover {
+  background-color: red;
+  color: white;
+}
+
+
+

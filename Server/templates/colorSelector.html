@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Color Selector</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <link rel="stylesheet" href="../static/colorSelector/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="left-side">
+        <div class="image-container">
+            <canvas id="canvas" style="display: none;"></canvas>
+            <img id="image" src="../static/notFound.png" onerror="this.onerror=null; this.src='../static/notFound.png'" alt="" width="640" height="480">
+        </div>
+        <div class="button-container">
+            <button id="button-update-image" type="button">Reload Image</button>
+        </div>
+    </div>
+
+    <div class="right-side">
+        <div class="button-container">
+            <button id="confirm-button" type="button">confirm</button>
+            <button id="remove-all-button" type="button">remove all</button>
+        </div>
+        <div id="color-selection-container"></div>
+    </div>
+
+    <script src="../static/colorSelector/script.js"></script>
+</body>
+</html>
