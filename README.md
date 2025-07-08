@@ -15,7 +15,7 @@
     ```
 3. Make sure both devices(server and client) are connected to the same network
 4. Starting the server: `/Nerfturret/Server/` + `py Server.py`(windows) or `python3 Server.py`(linux)
-5. Running the turret: `/Nerfturret/Server/` + `py main.py`(windows) or `python3 Server.py`(linux) + [arguments](./README.md#arguments)
+5. Running the turret: `/Nerfturret/Nerfturret/` + `py main.py`(windows) or `python3 main.py`(linux) + [arguments](./README.md#arguments)
 
 ## Arguments
 `-h`, `--help`: Shows the arguments and their descriptions.
@@ -35,6 +35,8 @@ pick colors. The mean of the selected colors will be detected. Affected by `-cr`
 `-img`, `--show_image`: If used, displays the camera output after detection in a new window. Same as display on website. 
 
 `-v`, `--verbose`: If used, gives more output in the terminal. Affected by `-i`.
+
+`-w`, `--runWebsite`: If used the Turret posts logs, detection pictures and parameters to the website.
 
 ## Object detection
 Detects different objects. If it is possible to use color detection consider this option. Object detection uses more capacity than color detection and is therefore much slower.

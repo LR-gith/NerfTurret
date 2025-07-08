@@ -26,9 +26,6 @@ class Turret:
 
 
     def run(self):
-        frame = None
-        values = None
-
         if self.detecting_color:
             frame, mask, values =  self.detect_color()
         else:
@@ -148,7 +145,6 @@ class Turret:
         rgb_red = rgb_red // size
         rgb_green = rgb_green // size
         rgb_blue = rgb_blue // size
-        color_mean = webcolors.rgb_to_hex((rgb_red,rgb_green,rgb_blue))
         return (rgb_red,rgb_green,rgb_blue)
 
     def setTargetClassToRGBValue(self, target_class, color_range):

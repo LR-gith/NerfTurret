@@ -1,12 +1,9 @@
 import time
-import Client
 
 try:
     import RPi.GPIO as GPIO
     running_on_pi = True
 except (ImportError, RuntimeError):
-    Client.log_to_server("Turret isn't operating on pi!")
-    Client.log_to_server("No GPIO output will be done!")
     GPIO = None
     running_on_pi = False
 
