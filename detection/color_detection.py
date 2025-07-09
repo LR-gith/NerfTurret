@@ -5,7 +5,7 @@ import webcolors
 
 class ColorDetection:
 
-    def __init__(self, target_class, color_range, camera_size=(640, 480), camera_bandwidth=(90, 70), show_img=False):
+    def __init__(self, target_class, color_range, website_running, camera_size=(640, 480), camera_bandwidth=(90, 70), show_img=False):
         try:
             self.target_class = webcolors.name_to_rgb(target_class)
         except (ValueError, AttributeError):
@@ -19,7 +19,8 @@ class ColorDetection:
         self.camera_bandwidth = camera_bandwidth
         self.camera_width_angle = camera_bandwidth[0]
         self.camera_height_angle = camera_bandwidth[1]
-        self.showImg = show_img
+        self.website_running = website_running
+        self.show_img = show_img
         self.counter = 0
 
     def detect(self, frame):
@@ -48,9 +49,9 @@ class ColorDetection:
                 cv2.circle(frame, (x_mid, y_mid), radius=1, color=(0, 0, 255), thickness=2)
 
 
-        if self.showImg:
+        if self.show_img and not self.website_running:
             cv2.imshow("Mask", mask)
-            cv2.imshow("Detection", frame)
+            cv2.imshow("detection", frame)
             cv2.waitKey(1)
 
         values = {"conf": conf, "x": x_mid, "y": y_mid, "relative_x_angle": x_angle,
@@ -67,24 +68,24 @@ class ColorDetection:
 
         return lower_rgb, upper_rgb
 
-    def color_mean(self, hexColors):
-        if isinstance(hexColors, str):
-            hexColors = [hexColors]
+    def color_mean(self, hex_colors) -> tuple[int,int,int]:
+        if isinstance(hex_colors, str):
+            hex_colors = [hex_colors]
         rgb_red = 0
         rgb_green = 0
         rgb_blue = 0
-        for color in hexColors:
-            rgbColor = webcolors.hex_to_rgb(str(color))
-            rgb_red += rgbColor[0]
-            rgb_green += rgbColor[1]
-            rgb_blue += rgbColor[2]
-        size = len(hexColors)
+        for color in hex_colors:
+            rgb_color = webcolors.hex_to_rgb(str(color))
+            rgb_red += rgb_color[0]
+            rgb_green += rgb_color[1]
+            rgb_blue += rgb_color[2]
+        size = len(hex_colors)
         rgb_red = rgb_red // size
         rgb_green = rgb_green // size
         rgb_blue = rgb_blue // size
-        return (rgb_red, rgb_green, rgb_blue)
+        return rgb_red, rgb_green, rgb_blue
 
     def stop(self):
-        if not self.showImg:
+        if not self.show_img:
             cv2.destroyAllWindows()
         print("Stopping the color detection")

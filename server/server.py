@@ -4,30 +4,32 @@ import sys
 
 import cv2
 import numpy as np
-from flask import Flask, request, jsonify, render_template, send_file, send_from_directory, redirect, url_for
-from flask_socketio import SocketIO, emit
+from flask import Flask, request, jsonify, render_template, send_file, send_from_directory
+from flask_socketio import SocketIO
 import io
 from dotenv import load_dotenv
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from Detection.ColorDetection import ColorDetection
-from Detection.ObjectDetection import ObjectDetection
+from detection.color_detection import ColorDetection
+from detection.object_detection import ObjectDetection
+from exception.exception import UnrecognizedDetectorException
 
 
 app = Flask(__name__)
 socketio = SocketIO(app)
-stored_value = {"value": "No value set yet"}
+no_value_set_constant = "No value set yet"
+stored_value = {"value": no_value_set_constant}
 redirectToColorSelection = {"redirect": False}
 current_image = None
 current_mask = None
 current_values = {
-    'conf': "No value set yet",
-    'x': "No value set yet",
-    'y': "No value set yet",
-    'relative_x_angle': "No value set yet",
-    'relative_y_angle': "No value set yet",
-    'absolut_x_angle': "No value set yet",
-    'absolut_y_angle': "No value set yet"
+    'conf': no_value_set_constant,
+    'x': no_value_set_constant,
+    'y': no_value_set_constant,
+    'relative_x_angle': no_value_set_constant,
+    'relative_y_angle': no_value_set_constant,
+    'absolut_x_angle': no_value_set_constant,
+    'absolut_y_angle': no_value_set_constant
 }
 color_selections = {"status" : "", "colors" : []}
 @app.route('/')
@@ -35,8 +37,8 @@ def homepage():
     return render_template('index.html', value=stored_value['value'])
 
 @app.route('/colorSelector')
-def colorSelector():
-    return render_template('colorSelector.html')
+def color_selector():
+    return render_template('color_selector.html')
 
 @app.route('/ping', methods=['GET'])
 def ping():
@@ -117,12 +119,14 @@ def update_color_detection():
     }), 200
 
 @app.route('/calculateDetection', methods=['POST'])
-def calculateDetection():
+def calculate_detection():
+    global current_image, current_mask, current_values
     image_file = request.files['image']
     img_bytes = image_file.read()
     image_array = np.frombuffer(img_bytes, np.uint8)
     frame = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
 
+    website_running = bool(request.form.get('website_running'))
     detector_class = str(request.form.get('detector_class'))
     detector_target_class = str(request.form.get('detector_target_class'))
     detector_color_range = int(request.form.get('detector_color_range'))
@@ -130,32 +134,53 @@ def calculateDetection():
     detector_camera_height = int(request.form.get("detector_camera_height"))
     detector_camera_width_angle = int(request.form.get("detector_camera_width_angle"))
     detector_camera_height_angle = int(request.form.get("detector_camera_height_angle"))
-    detector_showImg = bool(request.form.get('detector_showImg'))
+    detector_show_img = bool(request.form.get('detector_show_img'))
     absolut_x_angle = int(request.form.get('absolut_x_angle'))
     absolut_y_angle = int(request.form.get('absolut_y_angle'))
 
     if  detector_class == "ObjectDetection":
-        detector = ObjectDetection(detector_target_class, (detector_camera_width, detector_camera_height), (detector_camera_width_angle, detector_camera_height_angle), detector_showImg)
+        detector = ObjectDetection(target_class=detector_target_class,
+                                   website_running=website_running,
+                                   camera_size=(detector_camera_width, detector_camera_height),
+                                   camera_bandwidth=(detector_camera_width_angle, detector_camera_height_angle),
+                                   show_img=detector_show_img
+                                   )
     elif detector_class == "ColorDetection":
-        detector = ColorDetection(detector_target_class, detector_color_range, (detector_camera_width, detector_camera_height), (detector_camera_width_angle, detector_camera_height_angle), detector_showImg)
+        detector = ColorDetection(target_class=detector_target_class,
+                                  color_range=detector_color_range,
+                                  website_running=website_running,
+                                  camera_size=(detector_camera_width, detector_camera_height),
+                                  camera_bandwidth=(detector_camera_width_angle, detector_camera_height_angle),
+                                  show_img=detector_show_img
+                                  )
     else:
-        raise Exception("Unrecognized class for detector")
+        raise UnrecognizedDetectorException("Unrecognized class for detector")
     result_frame, mask, values = detector.detect(frame)
 
     values['absolut_x_angle'] = int(np.clip(absolut_x_angle + values['relative_x_angle'], 0, 180))
     values['absolut_y_angle'] = int(np.clip(absolut_y_angle + values['relative_y_angle'], 60, 120))
-    encoded_frame = encode_image(result_frame)
-    if mask is not None: encoded_mask = encode_image(mask)
-    else: encoded_mask = None
+    current_image = result_frame
+    current_values = values
+    if mask is not None:
+        current_mask = mask
+        socketio.emit('updateColorDetection', {
+            'values': current_values,
+            'both_image_updated': True
+        })
+    else:
+        socketio.emit('updateObjectDetection', {
+            'values': current_values,
+            'image_updated': True
+        })
 
-    return jsonify({"frame" : encoded_frame, "mask" : encoded_mask, "values" : values}), 200
+    return jsonify({"values" : values}), 200
 
 def encode_image(img):
     _, buffer = cv2.imencode('.jpg', img)
     return base64.b64encode(buffer).decode('utf-8')
 
 @app.route('/updateOnlyImage',methods=['POST'])
-def updateOnlyImage():
+def update_only_image():
     global current_image
     if 'image' not in request.files:
         return jsonify({"error": "Missing one of the images in request"}), 400
@@ -183,7 +208,7 @@ def clear_color_selection():
     return jsonify(color_selections)
 
 @app.route('/updateColorSelections', methods=['POST'])
-def updateColorSelections():
+def update_color_selections():
     global color_selections
     json = request.get_json()
     if 'colors' not in json:
@@ -194,7 +219,7 @@ def updateColorSelections():
 
 
 @app.route('/redirectToColorSelection', methods=['GET'])
-def redirectToColorSelection():
+def redirect_to_color_selection():
     try:
         socketio.emit('redirectToColorSelection')
     except Exception as exception:

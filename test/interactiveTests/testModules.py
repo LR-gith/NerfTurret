@@ -1,4 +1,4 @@
-from NerfTurret.PiController import PiController
+from turret.pi_controller import PiController
 
 pi = PiController(18,19,2,3)
 

@@ -1,27 +1,31 @@
-import base64
 import os
 import time
+from json import JSONDecodeError
+
 import cv2
-import numpy as np
 import requests
 import io
 from dotenv import load_dotenv
+
+from exception.exception import EncodeImageException
 
 env_path = os.path.join(os.path.dirname(__file__), '..', '.env')
 load_dotenv(env_path)
 SERVER_IP=os.getenv('SERVER_IP')
 PORT=os.getenv('PORT')
 SERVER_URL = f'http://{SERVER_IP}:{PORT}'
+FRAME_DOT_JPG_STRING = 'frame.jpg'
+IMAGE_SLASH_JPEG_STRING= 'image/jpeg'
 
 current_iteration = 0
 print_iteration = 1
 
-def initializeConnection():
+def initialize_connection():
     attempts = 0
     max_attempts = 10
     while attempts < max_attempts :
         if ping():
-            return True
+            break
         if attempts == 0: print(f"Can't connect to server {SERVER_URL}")
         print("Failed to connect, retrying in one second...")
         time.sleep(1)
@@ -29,6 +33,7 @@ def initializeConnection():
     else:
         print("Failed to connect after multiple attempts.")
         return False
+    return True
 
 def reconnect():
     attempts = 0
@@ -36,88 +41,73 @@ def reconnect():
     print(f"Can't connect to server {SERVER_URL}")
     while attempts < max_attempts:
         if ping():
-            return True
+            break
         print("Failed to connect, retrying in one second...")
         time.sleep(1)
         attempts += 1
     else:
         exit("Failed to reconnect after multiple attempts.")
+    return True
+
+def print_detection_response_helper(response):
+    global current_iteration
+    response_json = response.json()
+    if current_iteration % print_iteration == 0:
+        print(', '.join(f"{key}: {value}" for key, value in response_json.items()))
+    current_iteration += 1
+
+def update_object_detection(frame, values):
+    success, encoded_image = cv2.imencode('.jpg', frame)
+    if not success:
+        raise EncodeImageException()
+    image_bytes = io.BytesIO(encoded_image.tobytes())
+    image = {'image': (FRAME_DOT_JPG_STRING, image_bytes, IMAGE_SLASH_JPEG_STRING)}
+    try:
+        response = requests.post(f"{SERVER_URL}/updateObjectDetection", data=values, files=image)
+    except requests.exceptions.ConnectionError:
+        return reconnect()
+
+    print_detection_response_helper(response)
+
+    return True
 
 def update_color_detection(frame, mask, values):
-    global current_iteration
     image_success, encoded_image = cv2.imencode('.jpg', frame)
     mask_success, encoded_mask = cv2.imencode('.jpg', mask)
 
     if image_success ^ mask_success:
-        print("Could not encode image")
-        return False
+        raise EncodeImageException()
     image_bytes = io.BytesIO(encoded_image.tobytes())
     mask_bytes = io.BytesIO(encoded_mask.tobytes())
-    images = {'image': ('frame.jpg', image_bytes, 'image/jpeg'),'mask': ('mask.jpg', mask_bytes, 'image/jpeg')}
+    images = {'image': (FRAME_DOT_JPG_STRING, image_bytes, IMAGE_SLASH_JPEG_STRING),'mask': ('mask.jpg', mask_bytes, IMAGE_SLASH_JPEG_STRING)}
 
     try:
         response = requests.post(f"{SERVER_URL}/updateColorDetection", data=values, files=images)
     except requests.exceptions.ConnectionError:
         return reconnect()
 
+    print_detection_response_helper(response)
 
-    responseJson = response.json()
-    if current_iteration % print_iteration == 0:
-        print(f"confidence:, {responseJson["confidence"]}, "
-              f"x: {responseJson["x"]}, y: {responseJson["y"]}, "
-              f"relative_x_angle: {responseJson["relative_x_angle"]}, "
-              f"relative_y_angle: {responseJson["relative_y_angle"]},"
-              f"absolut_x_angle: {responseJson["absolut_x_angle"]},"
-              f"absolut_y_angle: {responseJson["absolut_y_angle"]},")
-    current_iteration += 1
     return True
 
 def calculate_detection(data, image):
+    global current_iteration
     try:
         response = requests.post(f"{SERVER_URL}/calculateDetection", data=data, files=image)
     except requests.exceptions.ConnectionError:
         return reconnect()
-
-    responseJson = response.json()
-    frame = responseJson['frame']
-    mask = responseJson['mask']
-    values = responseJson['values']
-
-    frame_bytes = base64.b64decode(frame)
-    frame_decoded = cv2.imdecode(np.frombuffer(frame_bytes, np.uint8), cv2.IMREAD_COLOR)
-    if mask is not None:
-        mask_bytes = base64.b64decode(mask)
-        mask_decoded = cv2.imdecode(np.frombuffer(mask_bytes, np.uint8), cv2.IMREAD_COLOR)
-    else:
-        mask_decoded = None
-
-    return frame_decoded, mask_decoded, values
-
-
-def update_object_detection(frame, values):
-    global current_iteration
-    success, encoded_image = cv2.imencode('.jpg', frame)
-    if not success:
-        print("Could not encode image")
-        return False
-    image_bytes = io.BytesIO(encoded_image.tobytes())
-    image = {'image': ('frame.jpg', image_bytes, 'image/jpeg')}
+    if response.status_code != 200:
+        raise SystemError("server responded with an error code")
     try:
-        response = requests.post(f"{SERVER_URL}/updateObjectDetection", data=values, files=image)
-    except requests.exceptions.ConnectionError:
-        return reconnect()
+        response_json = response.json()
+    except JSONDecodeError:
+        raise ValueError("response isn't a json format")
 
-
-    responseJson = response.json()
+    values = response_json['values']
     if current_iteration % print_iteration == 0:
-        print(f"confidence:, {responseJson["confidence"]}, "
-              f"x: {responseJson["x"]}, y: {responseJson["y"]}, "
-              f"relative_x_angle: {responseJson["relative_x_angle"]}, "
-              f"relative_y_angle: {responseJson["relative_y_angle"]},"
-              f"absolut_x_angle: {responseJson["absolut_x_angle"]},"
-              f"absolut_y_angle: {responseJson["absolut_y_angle"]},")
+        print(', '.join(f"{key}: {value}" for key, value in values.items()))
     current_iteration += 1
-    return True
+    return values
 
 def get_value_from_server():
     try:
@@ -125,17 +115,16 @@ def get_value_from_server():
     except requests.exceptions.ConnectionError:
         return reconnect()
 
-    responseJson = response.json()
-    print(f"Current value: {responseJson["current_value"]}")
+    response_json = response.json()
+    print(f"Current value: {response_json["current_value"]}")
     return True
 
-def updateOnlyImage(frame):
+def update_only_image(frame):
     success, encoded_image = cv2.imencode('.jpg', frame)
     if not success:
-        print("Could not encode image")
-        return False
+        raise EncodeImageException()
     image_bytes = io.BytesIO(encoded_image.tobytes())
-    image = {'image': ('frame.jpg', image_bytes, 'image/jpeg')}
+    image = {'image': (FRAME_DOT_JPG_STRING, image_bytes, IMAGE_SLASH_JPEG_STRING)}
     try:
         requests.post(f"{SERVER_URL}/updateOnlyImage", files=image)
     except requests.exceptions.ConnectionError:
@@ -143,38 +132,38 @@ def updateOnlyImage(frame):
 
     return True
 
-def getColorSelections():
+def get_color_selections():
     try:
         response = requests.get(f"{SERVER_URL}/get_color_selection_list")
     except requests.exceptions.ConnectionError:
         return reconnect(), None
 
-    responseJson = response.json()
-    if responseJson["status"] == "ok":
-        return True, responseJson["colors"]
+    response_json = response.json()
+    if response_json["status"] == "ok":
+        return True, response_json["colors"]
     else:
         return False, None
 
-def clearColorSelections():
+def clear_color_selections():
     try:
         response = requests.get(f"{SERVER_URL}/clear_color_selection")
     except requests.exceptions.ConnectionError:
         return reconnect()
 
-    responseJson = response.json()
-    if not responseJson["status"] and not responseJson["colors"]:
+    response_json = response.json()
+    if not response_json["status"] and not response_json["colors"]:
         return True
     else:
         return False
 
-def redirectToColorSelection():
+def redirect_to_color_selection():
     try:
         response = requests.get(f"{SERVER_URL}/redirectToColorSelection")
     except requests.exceptions.ConnectionError:
         return reconnect()
 
-    responseJson = response.json()
-    if responseJson["status"] == "redirected":
+    response_json = response.json()
+    if response_json["status"] == "redirected":
         return True
     else:
         return False
@@ -191,16 +180,13 @@ def log_to_server(message):
 
 def ping():
     try:
-        response = requests.get(f"{SERVER_URL}/ping")
-    except requests.exceptions.ConnectionError:
+        response = requests.get(f"{SERVER_URL}/ping",timeout=2)
+    except (requests.exceptions.ConnectionError, TimeoutError):
         return False
 
-    if response.content.decode() == "pong":
-        return True
-    else:
-        return False
+    return response.content.decode() == "pong"
 
-def setPrintIteration(iteration):
+def set_print_iteration(iteration):
     global print_iteration
     print_iteration = iteration
 

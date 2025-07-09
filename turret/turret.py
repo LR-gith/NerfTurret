@@ -9,7 +9,8 @@ import cv2
 import webcolors
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-import Client
+import client
+from exception import exception
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-i", "--iteration", type=int, help="output after I iterations", default=5)
@@ -29,20 +30,25 @@ verbose = args.verbose
 selector_running = args.pickColor
 website_running = args.runWebsite
 
+if website_running and show_img:
+    show_img = False
+    print("Wont display image because its already displayed on the website")
+if not website_running and selector_running:
+    print("Color selector can't run because not running on website")
+    target_class = "#ffffff"
 
 # initializes connection to the server
-if website_running:
-    if not Client.initializeConnection():
-        exit("Failed to connect to Server")
+if website_running and not client.initialize_connection():
+    exit("Failed to connect to server")
 
-from Camera import Camera
-from PiController import PiController, running_on_pi
-from Detection import ObjectDetection
-from Detection import ColorDetection
+from camera import Camera
+from pi_controller import PiController, running_on_pi
+from detection import object_detection
+from detection import color_detection
 
 if not running_on_pi and website_running:
-    Client.log_to_server("Turret isn't operating on pi!")
-    Client.log_to_server("No GPIO output will be done!")
+    client.log_to_server("Turret isn't operating on pi!")
+    client.log_to_server("No GPIO output will be done!")
 elif not running_on_pi and not website_running:
     print("Turret isn't operating on pi!")
     print("No GPIO output will be done!")
@@ -60,25 +66,19 @@ def wait_for_exit():
     global running
     input("Press [Enter] to exit...\n")
     running = False
-
-print("iteration: ",print_iteration , ", class: ", target_class, ", color_range: ", color_range, ", show image: ", show_img, ", verbose: ", verbose, ", pickColor: ", selector_running, ", runWebsite: ", website_running)
-
-
-controller = PiController(X_SERVO_PIN, Y_SERVO_PIN, CHARGE_PIN, SHOOT_PIN, verbose=verbose)
-
-camera = Camera(0)
-
-
 exit_thread = threading.Thread(target=wait_for_exit, daemon=True)
 exit_thread.start()
 
+print("iteration: ",print_iteration , ", class: ", target_class, ", color_range: ", color_range, ", show image: ", show_img, ", verbose: ", verbose, ", pickColor: ", selector_running, ", runWebsite: ", website_running)
+
+controller = PiController(X_SERVO_PIN, Y_SERVO_PIN, CHARGE_PIN, SHOOT_PIN, verbose=verbose)
+camera = Camera(0)
 
 if website_running:
-    Client.clearColorSelections()
-    Client.setPrintIteration(print_iteration)
+    client.clear_color_selections()
+    client.set_print_iteration(print_iteration)
     if selector_running:
-        Client.redirectToColorSelection()
-
+        client.redirect_to_color_selection()
 
     while selector_running:
         ret, frame = camera.read()
@@ -86,11 +86,11 @@ if website_running:
             print("Failed to grab frame!")
             break
 
-        if not Client.updateOnlyImage(frame):
+        if not client.update_only_image(frame):
             print("Failed to update image")
             running = False
 
-        valid, colors = Client.getColorSelections()
+        valid, colors = client.get_color_selections()
 
         if valid:
             selector_running = False
@@ -99,20 +99,26 @@ if website_running:
         else:
             time.sleep(0.5)
 
-if ObjectDetection.isClass(target_class):
-    detector = ObjectDetection.ObjectDetection(target_class=target_class, show_img=show_img)
+if object_detection.is_class(target_class):
+    detector = object_detection.ObjectDetection(target_class=target_class,
+                                                website_running=website_running,
+                                                show_img=show_img
+                                                )
 else:
-    detector = ColorDetection.ColorDetection(target_class=target_class, color_range=color_range, show_img=show_img)
+    detector = color_detection.ColorDetection(target_class=target_class,
+                                              color_range=color_range,
+                                              website_running=website_running,
+                                              show_img=show_img
+                                              )
 
-print(detector.target_class)
-
+print(f"Target class: {detector.target_class}")
 
 def with_website(camera_frame):
 
     success, encoded_image = cv2.imencode('.jpg', camera_frame)
     if not success:
-        print("Could not encode image")
-        return False
+        raise exception.EncodeException("Could not encode image")
+
     image_bytes = io.BytesIO(encoded_image.tobytes())
     image = {'image': ('frame.jpg', image_bytes, 'image/jpeg')}
     target_class_copy = detector.target_class
@@ -122,49 +128,47 @@ def with_website(camera_frame):
         except ValueError:
             print("Isn't a color")
 
-    data = {"detector_class" : detector.__class__.__name__,
+    data = {"website_running" : website_running,
+            "detector_class" : detector.__class__.__name__,
             "detector_target_class" : target_class_copy,
             "detector_color_range" : detector.color_range,
             "detector_camera_width" : detector.camera_width,
             "detector_camera_height" : detector.camera_height,
             "detector_camera_width_angle" : detector.camera_width_angle,
             "detector_camera_height_angle" : detector.camera_height_angle,
-            "detector_showImg" : detector.showImg,
-            "absolut_x_angle" : controller.getXServoAngle(),
-            "absolut_y_angle" : controller.getYServoAngle()}
+            "detector_show_img" : detector.show_img,
+            "absolut_x_angle" : controller.get_x_servo_angle(),
+            "absolut_y_angle" : controller.get_y_servo_angle()}
 
-    detection_frame, mask, values = Client.calculate_detection(data, image)
+    values = client.calculate_detection(data, image)
 
-    x_Angle = values['relative_x_angle']
-    y_Angle = values['relative_y_angle']
+    x_angle = values['relative_x_angle']
+    y_angle = values['relative_y_angle']
     absolut_x_angle = values['absolut_x_angle']
     absolut_y_angle = values['absolut_y_angle']
 
-    controller.align(x_Angle, y_Angle)
-    if absolut_x_angle != controller.xServoAngle or absolut_y_angle != controller.yServoAngle:
-        raise Exception("Absolut angles from Server and Turret are not synchronized")
+    controller.align(x_angle, y_angle)
+    if absolut_x_angle != controller.x_servo_angle or absolut_y_angle != controller.y_servo_angle:
+        raise exception.AngleMissmatchException("Absolut angles from server and turret are not synchronized")
 
     confidence = values["conf"]
-    if mask is not None and mask.size > 0:
-        Client.update_color_detection(detection_frame, mask, values)
-    else:
-        Client.update_object_detection(detection_frame, values)
 
     if counter % print_iteration == 0:
         if confidence == -1:
-            Client.log_to_server(f"No {target_class_copy} object detected")
+            client.log_to_server(f"No {target_class_copy} object detected")
         else:
-            Client.log_to_server(f"Detected {target_class_copy} object")
+            client.log_to_server(f"Detected {target_class_copy} object")
+
 
 
 def without_website(camera_frame):
-    frame, mask, values = detector.detect(camera_frame)
+    _, _, values = detector.detect(camera_frame)
     confidence = values["conf"]
-    x_Angle = values['relative_x_angle']
-    y_Angle = values['relative_y_angle']
-    controller.align(x_Angle, y_Angle)
-    values['absolut_x_angle'] = controller.getXServoAngle()
-    values['absolut_y_angle'] = controller.getYServoAngle()
+    x_angle = values['relative_x_angle']
+    y_angle = values['relative_y_angle']
+    controller.align(x_angle, y_angle)
+    values['absolut_x_angle'] = controller.get_x_servo_angle()
+    values['absolut_y_angle'] = controller.get_y_servo_angle()
     if counter % print_iteration == 0:
         if confidence == -1:
             print(f"No {target_class} object detected")
@@ -188,8 +192,3 @@ while running:
 detector.stop()
 camera.stop()
 controller.stop()
-
-
-#76,100 auf 100cm
-#auf breite 70°
-#auf höhe 90°

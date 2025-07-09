@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function removeAllEntries(){
         const colorEntries = selectionContainer.querySelectorAll('.color-entry');
-        colorEntries.forEach((entry, index) => {entry.remove();});
+        colorEntries.forEach((entry) => {entry.remove();});
         colorCount = 1;
     }
 

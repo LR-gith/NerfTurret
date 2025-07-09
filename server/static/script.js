@@ -48,10 +48,10 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelector('.confidence-fill').style.width = (values.conf*100 || 0) + '%';
         document.getElementById('x-value').textContent = values.x || '-';
         document.getElementById('y-value').textContent = values.y || '-';
-        document.getElementById('relative-x-angle-value').textContent = values.relative_x_angle || '-';
-        document.getElementById('relative-y-angle-value').textContent = values.relative_y_angle || '-';
-        document.getElementById('absolut-x-angle-value').textContent = values.absolut_x_angle || '-';
-        document.getElementById('absolut-y-angle-value').textContent = values.absolut_y_angle || '-';
+        document.getElementById('relative-x-angle-value').textContent = values.relative_x_angle || '0';
+        document.getElementById('relative-y-angle-value').textContent = values.relative_y_angle || '0';
+        document.getElementById('absolut-x-angle-value').textContent = values.absolut_x_angle || '0';
+        document.getElementById('absolut-y-angle-value').textContent = values.absolut_y_angle || '0';
         const relative_y_line = document.getElementById('relative-y-angle-line');
         if (relative_y_line) {
             relative_y_line.style.transform = `rotate(${values.relative_y_angle}deg)`;

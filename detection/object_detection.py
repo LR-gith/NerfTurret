@@ -3,24 +3,26 @@ import os
 import cv2
 import numpy as np
 from ultralytics import YOLO
-weight_path = os.path.abspath(os.path.join("..", "yoloWeights", "yolov5su.pt"))
+
+file_path = os.path.dirname(__file__)
+weight_path = os.path.join(file_path ,"..", "yolo_weights", "yolov5su.pt")
 
 
-
-def isClass(detection_class):
+def is_class(detection_class):
     return detection_class in classes
 
 
 class ObjectDetection:
 
-    def __init__(self, target_class, camera_size=(640, 480), camera_bandwidth=(90, 70), show_img=False):
+    def __init__(self, target_class, website_running, camera_size=(640, 480), camera_bandwidth=(90, 70), show_img=False):
         self.target_class = target_class
         self.camera_width = camera_size[0]
         self.camera_height = camera_size[1]
         self.camera_width_angle = camera_bandwidth[0]
         self.camera_height_angle = camera_bandwidth[1]
-        self.color_range = 0 #only set to use one variable for color and object detection object
-        self.showImg = show_img
+        self.color_range = 0  #only set to use one variable for color and object detection object
+        self.website_running = website_running
+        self.show_img = show_img
         self.__model = YOLO(weight_path)
         self.counter = 0
 
@@ -31,37 +33,37 @@ class ObjectDetection:
         y_angle = 0
 
         results = self.__model(frame, verbose=False)[0]
-        highestConf = -1
-        highestConfBox = None
+        highest_conf = -1
+        highest_conf_box = None
         for box in results.boxes:
             cls_id = int(box.cls[0])
             label = self.__model.names[cls_id]
 
             if label.lower() == self.target_class.lower():
                 conf = float(box.conf[0])
-                if conf > highestConf:
-                    highestConf = conf
-                    highestConfBox = box
+                if conf > highest_conf:
+                    highest_conf = conf
+                    highest_conf_box = box
 
-        if highestConfBox is not None:
-            x1, y1, x2, y2 = map(int, highestConfBox.xyxy[0])
+        if highest_conf_box is not None:
+            x1, y1, x2, y2 = map(int, highest_conf_box.xyxy[0])
             x = (x1 + x2) // 2
             y = (y1 + y2) // 2
             x_angle = int((self.camera_width_angle / self.camera_width) * (x - self.camera_width / 2))
             y_angle = int(-(self.camera_height_angle / self.camera_height) * (y - self.camera_height / 2))
             cv2.circle(frame, (x, y), radius=1, color=(0, 0, 255), thickness=2)
 
-
-        if self.showImg:
+        if self.show_img and not self.website_running:
             cv2.imshow("Object detection", frame)
             cv2.waitKey(1)
-        values = {"conf": np.round(highestConf, 3), "x": x, "y": y, "relative_x_angle": x_angle,
+
+        values = {"conf": np.round(highest_conf, 3), "x": x, "y": y, "relative_x_angle": x_angle,
                   "relative_y_angle": y_angle, "absolut_x_angle": "None",
                   "absolut_y_angle": "None"}
         return frame, None, values
 
     def stop(self):
-        if not self.showImg:
+        if not self.show_img:
             cv2.destroyAllWindows()
         print("Stopping the object detection")
 
