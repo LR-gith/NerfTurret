@@ -95,7 +95,9 @@ def calculate_detection(data, image):
     try:
         response = requests.post(f"{SERVER_URL}/calculateDetection", data=data, files=image)
     except requests.exceptions.ConnectionError:
-        return reconnect()
+        if reconnect():
+            response = requests.post(f"{SERVER_URL}/calculateDetection", data=data, files=image)
+
     if response.status_code != 200:
         raise SystemError("server responded with an error code")
     try:
@@ -180,7 +182,7 @@ def log_to_server(message):
 
 def ping():
     try:
-        response = requests.get(f"{SERVER_URL}/ping",timeout=2)
+        response = requests.get(f"{SERVER_URL}/ping", timeout=2)
     except (requests.exceptions.ConnectionError, TimeoutError):
         return False
 
