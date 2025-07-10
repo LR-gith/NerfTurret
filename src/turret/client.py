@@ -7,8 +7,8 @@ import cv2
 import requests
 from dotenv import load_dotenv
 
-from exception.exception import EncodeImageException
-from exception.exception import ReconnectionFailedException
+from src.exception.exception import EncodeImageException
+from src.exception.exception import ReconnectionFailedException
 
 env_path = os.path.join(os.path.dirname(__file__), '..', '.env')
 load_dotenv(env_path)

@@ -8,11 +8,11 @@ import time
 import cv2
 import webcolors
 
-from exception.exception import ReconnectionFailedException
+from src.exception.exception import ReconnectionFailedException
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import client
-from exception import exception
+from src.exception import exception
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-i", "--iteration", type=int,
@@ -53,8 +53,8 @@ if website_running and not client.initialize_connection():
 
 from camera import Camera
 from pi_controller import PiController, running_on_pi
-from detection import object_detection
-from detection import color_detection
+from src.detection import object_detection
+from src.detection import color_detection
 
 if not running_on_pi and website_running:
     client.log_to_server("Turret isn't operating on pi!")

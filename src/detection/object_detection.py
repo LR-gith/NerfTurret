@@ -5,7 +5,8 @@ import numpy as np
 from ultralytics import YOLO
 
 file_path = os.path.dirname(__file__)
-weight_path = os.path.join(file_path, "..", "yolo_weights", "yolov5su.pt")
+weight_path = os.path.join(file_path, "..", "..", "resources", "yolo_weights",
+                           "yolov5su.pt")
 
 
 def is_class(detection_class):

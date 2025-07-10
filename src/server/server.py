@@ -15,9 +15,9 @@ from flask import send_from_directory
 from flask_socketio import SocketIO
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from detection.color_detection import ColorDetection
-from detection.object_detection import ObjectDetection
-from exception.exception import UnrecognizedDetectorException
+from src.detection.color_detection import ColorDetection
+from src.detection.object_detection import ObjectDetection
+from src.exception.exception import UnrecognizedDetectorException
 
 app = Flask(__name__)
 socketio = SocketIO(app)
@@ -40,12 +40,12 @@ color_selections = {"status": "", "colors": []}
 
 @app.route('/')
 def homepage():
-    return render_template('index.html', value=stored_value['value'])
+    return render_template('templates/index.html', value=stored_value['value'])
 
 
 @app.route('/colorSelector')
 def color_selector():
-    return render_template('color_selector.html')
+    return render_template('templates/color_selector.html')
 
 
 @app.route('/ping', methods=['GET'])

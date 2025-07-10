@@ -1,4 +1,4 @@
-from turret.pi_controller import PiController
+from src.turret.pi_controller import PiController
 
 controller = PiController(18, 19, 2, 3, verbose=True)
 
