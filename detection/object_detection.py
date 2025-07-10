@@ -5,7 +5,7 @@ import numpy as np
 from ultralytics import YOLO
 
 file_path = os.path.dirname(__file__)
-weight_path = os.path.join(file_path ,"..", "yolo_weights", "yolov5su.pt")
+weight_path = os.path.join(file_path, "..", "yolo_weights", "yolov5su.pt")
 
 
 def is_class(detection_class):
@@ -14,17 +14,19 @@ def is_class(detection_class):
 
 class ObjectDetection:
 
-    def __init__(self, target_class, website_running, camera_size=(640, 480), camera_bandwidth=(90, 70), show_img=False):
+    def __init__(self, target_class, website_running, camera_size=(640, 480),
+                 camera_bandwidth=(90, 70), show_img=False):
         self.target_class = target_class
         self.camera_width = camera_size[0]
         self.camera_height = camera_size[1]
         self.camera_width_angle = camera_bandwidth[0]
         self.camera_height_angle = camera_bandwidth[1]
-        self.color_range = 0  #only set to use one variable for color and object detection object
+        self.color_range = 0  # only set to use one variable for a color and object detection object
         self.website_running = website_running
         self.show_img = show_img
         self.__model = YOLO(weight_path)
         self.counter = 0
+
 
     def detect(self, frame):
         x = None
@@ -49,18 +51,22 @@ class ObjectDetection:
             x1, y1, x2, y2 = map(int, highest_conf_box.xyxy[0])
             x = (x1 + x2) // 2
             y = (y1 + y2) // 2
-            x_angle = int((self.camera_width_angle / self.camera_width) * (x - self.camera_width / 2))
-            y_angle = int(-(self.camera_height_angle / self.camera_height) * (y - self.camera_height / 2))
+            x_angle = int((self.camera_width_angle / self.camera_width) * (
+                    x - self.camera_width / 2))
+            y_angle = int(-(self.camera_height_angle / self.camera_height) * (
+                    y - self.camera_height / 2))
             cv2.circle(frame, (x, y), radius=1, color=(0, 0, 255), thickness=2)
 
         if self.show_img and not self.website_running:
             cv2.imshow("Object detection", frame)
             cv2.waitKey(1)
 
-        values = {"conf": np.round(highest_conf, 3), "x": x, "y": y, "relative_x_angle": x_angle,
+        values = {"conf": np.round(highest_conf, 3), "x": x, "y": y,
+                  "relative_x_angle": x_angle,
                   "relative_y_angle": y_angle, "absolut_x_angle": "None",
                   "absolut_y_angle": "None"}
         return frame, None, values
+
 
     def stop(self):
         if not self.show_img:
@@ -69,14 +75,23 @@ class ObjectDetection:
 
 
 classes = [
-    "person", "bicycle", "car", "motorcycle", "airplane", "bus", "train", "truck", "boat",
-    "traffic light", "fire hydrant", "stop sign", "parking meter", "bench", "bird", "cat", "dog",
-    "horse", "sheep", "cow", "elephant", "bear", "zebra", "giraffe", "backpack", "umbrella",
-    "handbag", "tie", "suitcase", "frisbee", "skis", "snowboard", "sports ball", "kite",
-    "baseball bat", "baseball glove", "skateboard", "surfboard", "tennis racket", "bottle",
-    "wine glass", "cup", "fork", "knife", "spoon", "bowl", "banana", "apple", "sandwich",
-    "orange", "broccoli", "carrot", "hot dog", "pizza", "donut", "cake", "chair", "couch",
-    "potted plant", "bed", "dining table", "toilet", "tv", "laptop", "mouse", "remote",
-    "keyboard", "cell phone", "microwave", "oven", "toaster", "sink", "refrigerator", "book",
+    "person", "bicycle", "car", "motorcycle", "airplane", "bus", "train",
+    "truck", "boat",
+    "traffic light", "fire hydrant", "stop sign", "parking meter", "bench",
+    "bird", "cat", "dog",
+    "horse", "sheep", "cow", "elephant", "bear", "zebra", "giraffe", "backpack",
+    "umbrella",
+    "handbag", "tie", "suitcase", "frisbee", "skis", "snowboard", "sports ball",
+    "kite",
+    "baseball bat", "baseball glove", "skateboard", "surfboard",
+    "tennis racket", "bottle",
+    "wine glass", "cup", "fork", "knife", "spoon", "bowl", "banana", "apple",
+    "sandwich",
+    "orange", "broccoli", "carrot", "hot dog", "pizza", "donut", "cake",
+    "chair", "couch",
+    "potted plant", "bed", "dining table", "toilet", "tv", "laptop", "mouse",
+    "remote",
+    "keyboard", "cell phone", "microwave", "oven", "toaster", "sink",
+    "refrigerator", "book",
     "clock", "vase", "scissors", "teddy bear", "hair drier", "toothbrush"
 ]

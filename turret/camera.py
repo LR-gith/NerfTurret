@@ -1,6 +1,7 @@
-import cv2
 import threading
 import time
+
+import cv2
 
 from exception.exception import CameraException
 
@@ -17,6 +18,7 @@ class Camera:
         self.thread = threading.Thread(target=self.update, daemon=True)
         self.thread.start()
 
+
     def update(self):
         while self.running:
             ret, frame = self.cap.read()
@@ -26,9 +28,11 @@ class Camera:
                     self.frame = frame
             time.sleep(0.01)
 
+
     def read(self):
         with self.lock:
             return self.ret, self.frame.copy()
+
 
     def stop(self):
         self.running = False

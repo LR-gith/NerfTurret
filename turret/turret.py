@@ -1,8 +1,8 @@
+import argparse
 import io
 import os
 import sys
 import threading
-import argparse
 import time
 
 import cv2
@@ -15,13 +15,21 @@ import client
 from exception import exception
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-i", "--iteration", type=int, help="output after I iterations", default=5)
-parser.add_argument("-c", "--class", type=str, help="detects this object class C", default="person", dest="targetClass")
-parser.add_argument("-cr", "--color_range", type=int, help="range above and below detected color", default=40)
-parser.add_argument("-img", "--showImg", action="store_true", help="When used an window will display the camera after detection")
-parser.add_argument("-v", "--verbose", action="store_true", help="Gives extra terminal output")
-parser.add_argument("-p", "--pickColor", action="store_true", help="When used lets you pick colors yourself")
-parser.add_argument("-rw", "--runWebsite", action="store_true", help="When set to false the website isn't used")
+parser.add_argument("-i", "--iteration", type=int,
+                    help="output after I iterations", default=5)
+parser.add_argument("-c", "--class", type=str,
+                    help="detects this object class C", default="person",
+                    dest="targetClass")
+parser.add_argument("-cr", "--color_range", type=int,
+                    help="range above and below detected color", default=40)
+parser.add_argument("-img", "--showImg", action="store_true",
+                    help="When used an window will display the camera after detection")
+parser.add_argument("-v", "--verbose", action="store_true",
+                    help="Gives extra terminal output")
+parser.add_argument("-p", "--pickColor", action="store_true",
+                    help="When used lets you pick colors yourself")
+parser.add_argument("-rw", "--runWebsite", action="store_true",
+                    help="When set to false the website isn't used")
 args = parser.parse_args()
 
 print_iteration = args.iteration
@@ -55,7 +63,6 @@ elif not running_on_pi and not website_running:
     print("Turret isn't operating on pi!")
     print("No GPIO output will be done!")
 
-
 X_SERVO_PIN = 18
 Y_SERVO_PIN = 19
 CHARGE_PIN = 2
@@ -69,12 +76,17 @@ def wait_for_exit():
     input("Press [Enter] to exit...\n")
     running = False
 
+
 exit_thread = threading.Thread(target=wait_for_exit, daemon=True)
 exit_thread.start()
 
-print("iteration: ",print_iteration , ", class: ", target_class, ", color_range: ", color_range, ", show image: ", show_img, ", verbose: ", verbose, ", pickColor: ", selector_running, ", runWebsite: ", website_running)
+print("iteration: ", print_iteration, ", class: ", target_class,
+      ", color_range: ", color_range, ", show image: ", show_img, ", verbose: ",
+      verbose, ", pickColor: ", selector_running, ", runWebsite: ",
+      website_running)
 
-controller = PiController(X_SERVO_PIN, Y_SERVO_PIN, CHARGE_PIN, SHOOT_PIN, verbose=verbose)
+controller = PiController(X_SERVO_PIN, Y_SERVO_PIN, CHARGE_PIN, SHOOT_PIN,
+                          verbose=verbose)
 camera = Camera(0)
 
 if website_running:
@@ -116,8 +128,8 @@ else:
 
 print(f"Target class: {detector.target_class}")
 
-def with_website(camera_frame):
 
+def with_website(camera_frame):
     success, encoded_image = cv2.imencode('.jpg', camera_frame)
     if not success:
         raise exception.EncodeImageException()
@@ -131,17 +143,17 @@ def with_website(camera_frame):
         except ValueError:
             print("Isn't a color")
 
-    data = {"website_running" : website_running,
-            "detector_class" : detector.__class__.__name__,
-            "detector_target_class" : target_class_copy,
-            "detector_color_range" : detector.color_range,
-            "detector_camera_width" : detector.camera_width,
-            "detector_camera_height" : detector.camera_height,
-            "detector_camera_width_angle" : detector.camera_width_angle,
-            "detector_camera_height_angle" : detector.camera_height_angle,
-            "detector_show_img" : detector.show_img,
-            "absolut_x_angle" : controller.get_x_servo_angle(),
-            "absolut_y_angle" : controller.get_y_servo_angle()}
+    data = {"website_running": website_running,
+            "detector_class": detector.__class__.__name__,
+            "detector_target_class": target_class_copy,
+            "detector_color_range": detector.color_range,
+            "detector_camera_width": detector.camera_width,
+            "detector_camera_height": detector.camera_height,
+            "detector_camera_width_angle": detector.camera_width_angle,
+            "detector_camera_height_angle": detector.camera_height_angle,
+            "detector_show_img": detector.show_img,
+            "absolut_x_angle": controller.get_x_servo_angle(),
+            "absolut_y_angle": controller.get_y_servo_angle()}
 
     values = client.calculate_detection(data, image)
 
@@ -152,7 +164,8 @@ def with_website(camera_frame):
 
     controller.align(x_angle, y_angle)
     if absolut_x_angle != controller.x_servo_angle or absolut_y_angle != controller.y_servo_angle:
-        raise exception.AngleMissmatchException("Absolut angles from server and turret are not synchronized")
+        raise exception.AngleMissmatchException(
+            "Absolut angles from server and turret are not synchronized")
 
     confidence = values["conf"]
 
@@ -161,7 +174,6 @@ def with_website(camera_frame):
             client.log_to_server(f"No {target_class_copy} object detected")
         else:
             client.log_to_server(f"Detected {target_class_copy} object")
-
 
 
 def without_website(camera_frame):
@@ -177,6 +189,7 @@ def without_website(camera_frame):
             print(f"No {target_class} object detected")
         else:
             print(f"Detected {target_class} object")
+
 
 while running:
     ret, frame = camera.read()
@@ -194,7 +207,6 @@ while running:
         without_website(frame)
 
     counter += 1
-
 
 detector.stop()
 camera.stop()
