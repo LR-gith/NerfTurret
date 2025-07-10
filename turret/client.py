@@ -57,6 +57,7 @@ def print_detection_response_helper(response):
     current_iteration += 1
 
 def update_object_detection(frame, values):
+    response = None
     success, encoded_image = cv2.imencode('.jpg', frame)
     if not success:
         raise EncodeImageException()
@@ -65,13 +66,16 @@ def update_object_detection(frame, values):
     try:
         response = requests.post(f"{SERVER_URL}/updateObjectDetection", data=values, files=image)
     except requests.exceptions.ConnectionError:
-        return reconnect()
+        if reconnect():
+            renewed_image = {'image': (FRAME_DOT_JPG_STRING, create_new_buffer(image['image'][1]), IMAGE_SLASH_JPEG_STRING)}
+            response = requests.post(f"{SERVER_URL}/updateObjectDetection", data=values, files=renewed_image)
 
     print_detection_response_helper(response)
 
     return True
 
 def update_color_detection(frame, mask, values):
+    response = None
     image_success, encoded_image = cv2.imencode('.jpg', frame)
     mask_success, encoded_mask = cv2.imencode('.jpg', mask)
 
@@ -84,7 +88,11 @@ def update_color_detection(frame, mask, values):
     try:
         response = requests.post(f"{SERVER_URL}/updateColorDetection", data=values, files=images)
     except requests.exceptions.ConnectionError:
-        return reconnect()
+        if reconnect():
+            renewed_image = {'image': (FRAME_DOT_JPG_STRING, create_new_buffer(images['image'][1]), IMAGE_SLASH_JPEG_STRING),
+                             'mask': ('mask.jpg', create_new_buffer(images['mask'][1]), IMAGE_SLASH_JPEG_STRING)
+                             }
+            response = requests.post(f"{SERVER_URL}/updateColorDetection", data=values, files=renewed_image)
 
     print_detection_response_helper(response)
 
@@ -92,14 +100,12 @@ def update_color_detection(frame, mask, values):
 
 def calculate_detection(data, image):
     global current_iteration
-
+    response = None
     try:
         response = requests.post(f"{SERVER_URL}/calculateDetection", data=data, files=image)
     except requests.exceptions.ConnectionError:
         if reconnect():
-            old_buffer = image['image'][1]
-            new_buffer = io.BytesIO(old_buffer.getvalue())
-            renewed_image = {'image': (image['image'][0], new_buffer, image['image'][2])}
+            renewed_image = {'image': (image['image'][0], create_new_buffer(image['image'][1]), image['image'][2])}
             response = requests.post(f"{SERVER_URL}/calculateDetection", data=data, files=renewed_image)
 
 
@@ -116,11 +122,16 @@ def calculate_detection(data, image):
     current_iteration += 1
     return values
 
+def create_new_buffer(old_buffer):
+    return io.BytesIO(old_buffer.getvalue())
+
+
 def get_value_from_server():
     try:
         response = requests.get(f"{SERVER_URL}/value")
     except requests.exceptions.ConnectionError:
-        return reconnect()
+        if reconnect():
+            response = requests.get(f"{SERVER_URL}/value")
 
     response_json = response.json()
     print(f"Current value: {response_json["current_value"]}")
@@ -135,7 +146,9 @@ def update_only_image(frame):
     try:
         requests.post(f"{SERVER_URL}/updateOnlyImage", files=image)
     except requests.exceptions.ConnectionError:
-        return reconnect()
+        if reconnect():
+            renewed_image = {'image': (FRAME_DOT_JPG_STRING, create_new_buffer(image['image'][1]), IMAGE_SLASH_JPEG_STRING)}
+            requests.post(f"{SERVER_URL}/updateOnlyImage", files=renewed_image)
 
     return True
 
@@ -143,7 +156,8 @@ def get_color_selections():
     try:
         response = requests.get(f"{SERVER_URL}/get_color_selection_list")
     except requests.exceptions.ConnectionError:
-        return reconnect(), None
+        if reconnect():
+            response = requests.get(f"{SERVER_URL}/get_color_selection_list")
 
     response_json = response.json()
     if response_json["status"] == "ok":
@@ -155,7 +169,8 @@ def clear_color_selections():
     try:
         response = requests.get(f"{SERVER_URL}/clear_color_selection")
     except requests.exceptions.ConnectionError:
-        return reconnect()
+        if reconnect():
+            response = requests.get(f"{SERVER_URL}/clear_color_selection")
 
     response_json = response.json()
     if not response_json["status"] and not response_json["colors"]:
@@ -167,7 +182,8 @@ def redirect_to_color_selection():
     try:
         response = requests.get(f"{SERVER_URL}/redirectToColorSelection")
     except requests.exceptions.ConnectionError:
-        return reconnect()
+        if reconnect():
+            response = requests.get(f"{SERVER_URL}/redirectToColorSelection")
 
     response_json = response.json()
     if response_json["status"] == "redirected":
@@ -180,8 +196,8 @@ def log_to_server(message):
     try:
         requests.post(f"{SERVER_URL}/log", json={"message": message})
     except requests.exceptions.ConnectionError:
-        print(f"Can't connect to server {SERVER_URL}")
-        return reconnect()
+        if reconnect():
+            requests.post(f"{SERVER_URL}/log", json={"message": message})
 
     return True
 

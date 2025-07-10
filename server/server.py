@@ -51,9 +51,7 @@ def update_object_detection():
         return jsonify({"error": "Missing image in request"}), 400
 
     image_file = request.files['image']
-    img_bytes = image_file.read()
-    image_array = np.frombuffer(img_bytes, np.uint8)
-    current_image = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
+    current_image = decode_image(image_file)
     current_values = {
         'conf': request.form.get('conf'),
         'x': request.form.get('x'),
@@ -85,15 +83,10 @@ def update_color_detection():
         return jsonify({"error": "Missing one of the images in request"}), 400
 
     image_file = request.files['image']
-    img_bytes = image_file.read()
-    image_array = np.frombuffer(img_bytes, np.uint8)
-    current_image = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
+    current_image = decode_image(image_file)
 
     mask_file = request.files['mask']
-    mask_bytes = mask_file.read()
-    mask_array = np.frombuffer(mask_bytes, np.uint8)
-    current_mask = cv2.imdecode(mask_array, cv2.IMREAD_COLOR)
-
+    current_mask = decode_image(mask_file)
     current_values = {
         'conf': request.form.get('conf'),
         'x': request.form.get('x'),
@@ -122,9 +115,7 @@ def update_color_detection():
 def calculate_detection():
     global current_image, current_mask, current_values
     image_file = request.files['image']
-    img_bytes = image_file.read()
-    image_array = np.frombuffer(img_bytes, np.uint8)
-    frame = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
+    frame = decode_image(image_file)
 
     website_running = bool(request.form.get('website_running'))
     detector_class = str(request.form.get('detector_class'))
@@ -179,6 +170,12 @@ def encode_image(img):
     _, buffer = cv2.imencode('.jpg', img)
     return base64.b64encode(buffer).decode('utf-8')
 
+def decode_image(image_file):
+    img_bytes = image_file.read()
+    image_array = np.frombuffer(img_bytes, np.uint8)
+    return cv2.imdecode(image_array, cv2.IMREAD_COLOR)
+
+
 @app.route('/updateOnlyImage',methods=['POST'])
 def update_only_image():
     global current_image
@@ -186,9 +183,7 @@ def update_only_image():
         return jsonify({"error": "Missing one of the images in request"}), 400
 
     image_file = request.files['image']
-    img_bytes = image_file.read()
-    image_array = np.frombuffer(img_bytes, np.uint8)
-    current_image = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
+    current_image = decode_image(image_file)
     return jsonify({"status": "ok"}), 200
 
 @app.route('/get_color_selection_list')

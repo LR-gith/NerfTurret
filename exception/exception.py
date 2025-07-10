@@ -4,3 +4,4 @@ class EncodeImageException(Exception):
         super().__init__("Couldn't encode image")
 class UnrecognizedDetectorException(Exception): pass
 class ReconnectionFailedException(Exception): pass
+class CameraException(Exception): pass

@@ -2,13 +2,15 @@ import cv2
 import threading
 import time
 
+from exception.exception import CameraException
+
+
 class Camera:
     def __init__(self, camera_index=0):
         self.cap = cv2.VideoCapture(camera_index)
         self.ret, self.frame = self.cap.read()
         if not self.cap.isOpened():
-            print("Error: Could not open webcam.")
-            exit()
+            raise CameraException("Can't open webcam")
         self.lock = threading.Lock()
         self.running = True
 
@@ -22,7 +24,7 @@ class Camera:
                 with self.lock:
                     self.ret = ret
                     self.frame = frame
-            time.sleep(0.01)  # small delay to avoid CPU hogging
+            time.sleep(0.01)
 
     def read(self):
         with self.lock:
