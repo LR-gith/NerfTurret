@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 from src.exception.exception import EncodeImageException
 from src.exception.exception import ReconnectionFailedException
 
-env_path = os.path.join(os.path.dirname(__file__), '..', '.env')
+env_path = os.path.join(os.path.dirname(__file__), '..', '..', '.env')
 load_dotenv(env_path)
 SERVER_IP = os.getenv('SERVER_IP')
 PORT = os.getenv('PORT')

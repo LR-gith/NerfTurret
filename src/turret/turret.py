@@ -8,11 +8,12 @@ import time
 import cv2
 import webcolors
 
+sys.path.append(
+    os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+from src.turret import client
+from src.exception.exception import EncodeImageException
+from src.exception.exception import AngleMissmatchException
 from src.exception.exception import ReconnectionFailedException
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-import client
-from src.exception import exception
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-i", "--iteration", type=int,
@@ -132,7 +133,7 @@ print(f"Target class: {detector.target_class}")
 def with_website(camera_frame):
     success, encoded_image = cv2.imencode('.jpg', camera_frame)
     if not success:
-        raise exception.EncodeImageException()
+        raise EncodeImageException()
 
     image_bytes = io.BytesIO(encoded_image.tobytes())
     image = {'image': ('frame.jpg', image_bytes, 'image/jpeg')}
@@ -164,7 +165,7 @@ def with_website(camera_frame):
 
     controller.align(x_angle, y_angle)
     if absolut_x_angle != controller.x_servo_angle or absolut_y_angle != controller.y_servo_angle:
-        raise exception.AngleMissmatchException(
+        raise AngleMissmatchException(
             "Absolut angles from server and turret are not synchronized")
 
     confidence = values["conf"]

@@ -14,12 +14,16 @@ from flask import send_file
 from flask import send_from_directory
 from flask_socketio import SocketIO
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(
+    os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 from src.detection.color_detection import ColorDetection
 from src.detection.object_detection import ObjectDetection
 from src.exception.exception import UnrecognizedDetectorException
 
-app = Flask(__name__)
+template_dir = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), 'templates'))
+
+app = Flask(__name__, template_folder=template_dir)
 socketio = SocketIO(app)
 no_value_set_constant = "No value set yet"
 stored_value = {"value": no_value_set_constant}
@@ -40,12 +44,12 @@ color_selections = {"status": "", "colors": []}
 
 @app.route('/')
 def homepage():
-    return render_template('templates/index.html', value=stored_value['value'])
+    return render_template('index.html', value=stored_value['value'])
 
 
 @app.route('/colorSelector')
 def color_selector():
-    return render_template('templates/color_selector.html')
+    return render_template('color_selector.html')
 
 
 @app.route('/ping', methods=['GET'])
@@ -300,7 +304,7 @@ def get_value():
 
 
 if __name__ == '__main__':
-    env_path = os.path.join(os.path.dirname(__file__), '..', '.env')
+    env_path = os.path.join(os.path.dirname(__file__), '..', '..', '.env')
     load_dotenv(env_path)
     PORT = int(os.getenv('PORT'))
     app.run(host='0.0.0.0', port=PORT, debug=True)
