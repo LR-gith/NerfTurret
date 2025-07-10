@@ -8,6 +8,8 @@ import time
 import cv2
 import webcolors
 
+from exception.exception import ReconnectionFailedException
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import client
 from exception import exception
@@ -66,6 +68,7 @@ def wait_for_exit():
     global running
     input("Press [Enter] to exit...\n")
     running = False
+
 exit_thread = threading.Thread(target=wait_for_exit, daemon=True)
 exit_thread.start()
 
@@ -117,7 +120,7 @@ def with_website(camera_frame):
 
     success, encoded_image = cv2.imencode('.jpg', camera_frame)
     if not success:
-        raise exception.EncodeException("Could not encode image")
+        raise exception.EncodeImageException()
 
     image_bytes = io.BytesIO(encoded_image.tobytes())
     image = {'image': ('frame.jpg', image_bytes, 'image/jpeg')}
@@ -182,7 +185,11 @@ while running:
         break
 
     if website_running:
-        with_website(frame)
+        try:
+            with_website(frame)
+        except ReconnectionFailedException as e:
+            print(str(e))
+            running = False
     else:
         without_website(frame)
 

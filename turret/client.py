@@ -7,7 +7,7 @@ import requests
 import io
 from dotenv import load_dotenv
 
-from exception.exception import EncodeImageException
+from exception.exception import EncodeImageException, ReconnectionFailedException
 
 env_path = os.path.join(os.path.dirname(__file__), '..', '.env')
 load_dotenv(env_path)
@@ -46,7 +46,7 @@ def reconnect():
         time.sleep(1)
         attempts += 1
     else:
-        exit("Failed to reconnect after multiple attempts.")
+        raise ReconnectionFailedException("Failed to reconnect after multiple attempts.")
     return True
 
 def print_detection_response_helper(response):
@@ -92,11 +92,16 @@ def update_color_detection(frame, mask, values):
 
 def calculate_detection(data, image):
     global current_iteration
+
     try:
         response = requests.post(f"{SERVER_URL}/calculateDetection", data=data, files=image)
     except requests.exceptions.ConnectionError:
         if reconnect():
-            response = requests.post(f"{SERVER_URL}/calculateDetection", data=data, files=image)
+            old_buffer = image['image'][1]
+            new_buffer = io.BytesIO(old_buffer.getvalue())
+            renewed_image = {'image': (image['image'][0], new_buffer, image['image'][2])}
+            response = requests.post(f"{SERVER_URL}/calculateDetection", data=data, files=renewed_image)
+
 
     if response.status_code != 200:
         raise SystemError("server responded with an error code")
@@ -183,7 +188,7 @@ def log_to_server(message):
 def ping():
     try:
         response = requests.get(f"{SERVER_URL}/ping", timeout=2)
-    except (requests.exceptions.ConnectionError, TimeoutError):
+    except (requests.exceptions.ConnectionError, requests.exceptions.ReadTimeout, TimeoutError):
         return False
 
     return response.content.decode() == "pong"
