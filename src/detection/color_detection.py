@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import webcolors
+from webcolors import IntegerRGB
 
 
 class ColorDetection:
@@ -12,6 +13,9 @@ class ColorDetection:
             self.target_class = webcolors.name_to_rgb(target_class)
         except (ValueError, AttributeError):
             self.target_class = self.color_mean(target_class)
+
+        if color_range not in range(0, 255):
+            raise AttributeError("Invalid color range")
 
         self.color_range = color_range
         self.lower_rgb, self.upper_rgb = self.set_rgb_bounds(self.target_class)
@@ -48,10 +52,10 @@ class ColorDetection:
                 x_mid = x + (w // 2)
                 y_mid = y + (h // 2)
                 x_angle = int((self.camera_width_angle / self.camera_width) * (
-                            x - self.camera_width / 2))
+                        x_mid - self.camera_width / 2))
                 y_angle = int(
                     -(self.camera_height_angle / self.camera_height) * (
-                                y - self.camera_height / 2))
+                            y_mid - self.camera_height / 2))
                 cv2.circle(frame, (x_mid, y_mid), radius=1, color=(0, 0, 255),
                            thickness=2)
 
@@ -68,10 +72,14 @@ class ColorDetection:
 
 
     def set_rgb_bounds(self, rgb_color):
-        rgb_color = np.array(rgb_color)
+        if (isinstance(rgb_color, tuple) and len(rgb_color) == 3) or isinstance(
+                rgb_color, IntegerRGB):
+            rgb_color = np.array(rgb_color)
 
-        lower_rgb = np.clip(rgb_color - self.color_range, 0, 255)
-        upper_rgb = np.clip(rgb_color + self.color_range, 0, 255)
+            lower_rgb = np.clip(rgb_color - self.color_range, 0, 255)
+            upper_rgb = np.clip(rgb_color + self.color_range, 0, 255)
+        else:
+            raise ValueError("Type must be tuple or IntegerRGB")
 
         return lower_rgb, upper_rgb
 
@@ -79,6 +87,8 @@ class ColorDetection:
     def color_mean(self, hex_colors) -> tuple[int, int, int]:
         if isinstance(hex_colors, str):
             hex_colors = [hex_colors]
+        if type(hex_colors) is not list:
+            raise ValueError("Type must be an array!")
         rgb_red = 0
         rgb_green = 0
         rgb_blue = 0
@@ -95,6 +105,6 @@ class ColorDetection:
 
 
     def stop(self):
-        if not self.show_img:
+        if self.show_img:
             cv2.destroyAllWindows()
         print("Stopping the color detection")
