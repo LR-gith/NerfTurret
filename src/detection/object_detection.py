@@ -70,7 +70,7 @@ class ObjectDetection:
 
 
     def stop(self):
-        if not self.show_img:
+        if self.show_img:
             cv2.destroyAllWindows()
         print("Stopping the object detection")
 
