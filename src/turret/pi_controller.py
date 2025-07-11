@@ -11,7 +11,7 @@ except (ImportError, RuntimeError):
 
 class PiController:
 
-    def __init__(self, x_servo_pin, y_servo_pin, charge_pin, shoot_pin,
+    def __init__(self, x_servo_pin, y_servo_pin, charge_pin, load_pin,
                  verbose=False):
         self.x_servo_angle = 90
         self.y_servo_angle = 90
@@ -20,26 +20,30 @@ class PiController:
         self.x_servo_pin = x_servo_pin
         self.y_servo_pin = y_servo_pin
         self.charge_pin = charge_pin
-        self.shoot_pin = shoot_pin
+        self.load_pin = load_pin
         self.verbose = verbose
         self._assign_pins()
 
 
-    def shoot(self):
+    def shoot(self, charge_time, load_time):
         if not running_on_pi:
             return
+        if charge_time not in range(0, 6) or load_time not in range(0, 6):
+            raise ValueError("Invalid charge- or load-time")
         GPIO.output(self.charge_pin, GPIO.HIGH)
-        time.sleep(1)
-        GPIO.output(self.shoot_pin, GPIO.HIGH)
-        time.sleep(0.1)
+        time.sleep(charge_time)
+        GPIO.output(self.load_pin, GPIO.HIGH)
+        time.sleep(load_time)
         GPIO.output(self.charge_pin, GPIO.LOW)
-        GPIO.output(self.shoot_pin, GPIO.LOW)
+        GPIO.output(self.load_pin, GPIO.LOW)
         if self.verbose: print("Shot one time")
 
 
     def charge(self, waittime):
         if not running_on_pi:
             return
+        if waittime not in range(0, 6):
+            raise ValueError("Invalid charge time")
         GPIO.output(self.charge_pin, GPIO.HIGH)
         time.sleep(waittime)
         GPIO.output(self.charge_pin, GPIO.LOW)
@@ -49,9 +53,11 @@ class PiController:
     def load(self, waittime):
         if not running_on_pi:
             return
-        GPIO.output(self.shoot_pin, GPIO.HIGH)
+        if waittime not in range(0, 6):
+            raise ValueError("Invalid load time")
+        GPIO.output(self.load_pin, GPIO.HIGH)
         time.sleep(waittime)
-        GPIO.output(self.shoot_pin, GPIO.LOW)
+        GPIO.output(self.load_pin, GPIO.LOW)
         if self.verbose: print("Loaded for", waittime, "seconds")
 
 
@@ -62,13 +68,13 @@ class PiController:
         self._set_y_angle(90)
 
 
-    def align(self, x_angle, y_angle):
-        self.x_servo_angle += x_angle
-        self.y_servo_angle += y_angle
-        if self.verbose: print("Moving servo ", x_angle, "in x to pos",
+    def align(self, relative_x_angle, relative_y_angle):
+        self.x_servo_angle += relative_x_angle
+        self.y_servo_angle += relative_y_angle
+        if self.verbose: print("Moving servo ", relative_x_angle, "in x to pos",
                                self.x_servo_angle)
         self._set_x_angle(self.x_servo_angle)
-        if self.verbose: print("Moving servo ", y_angle, "in y to pos",
+        if self.verbose: print("Moving servo ", relative_y_angle, "in y to pos",
                                self.y_servo_angle)
         self._set_y_angle(self.y_servo_angle)
 
@@ -85,12 +91,13 @@ class PiController:
         self.y_servo = GPIO.PWM(self.y_servo_pin, 50)
         self.y_servo.start(0)
         GPIO.setup(self.charge_pin, GPIO.OUT)
-        GPIO.setup(self.shoot_pin, GPIO.OUT)
+        GPIO.setup(self.load_pin, GPIO.OUT)
 
 
     def _set_x_angle(self, angle):
         if 0 <= angle <= 180:
             self._set_angle(self.x_servo, angle)
+            self.x_servo_angle = angle
         elif angle < 0:
             self.x_servo_angle = 0
             self._set_angle(self.x_servo, 0)
@@ -104,6 +111,7 @@ class PiController:
     def _set_y_angle(self, angle):
         if 60 <= angle <= 120:
             self._set_angle(self.y_servo, angle)
+            self.y_servo_angle = angle
         elif angle < 60:
             self.y_servo_angle = 60
             self._set_angle(self.x_servo, 60)
