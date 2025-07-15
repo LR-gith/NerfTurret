@@ -1,21 +1,53 @@
+## Project Overview
+This project uses a camera to detect classes, either an object or a color. After the successful detection
+servos are moved to align and point towards the detected class. This can be used for basic tracking of these classes.
+
+
+## System Setup
+
+### 1. Raspberry Pi (turret controller + detection)
+- Two servos and a camera connected
+- Needs to have this repository + the .env file
+- Does the detection independently
+- Runs the `turret.py` script + [arguments](./README.md#arguments)
+
+### 2. Optional web dashboard (ideal, automatic outsourced detection)
+- Should be a more powerful device that the Pi
+- Must also have this repository cloned
+- Runs the `server.py` script, which hosts the web-dashboard and
+automatically outsources the detection from the Pi to this device
+
+### 3. Full single Pi setup (not recommended)
+- Runs `server.py` and `turret.py` + [arguments](./README.md#arguments) simultaneously on the Raspberry Pi
+- High demand on the Pi causes to much slower detection
+
 ## Running the code
 1. Install all packages needed:
    ```bash
-   pip3 install Flask-SocketIO==5.5.1
-   pip3 install keyboard==0.13.5
-   pip3 install python-dotenv==1.1.1
-   pip3 install ultralytics==8.3.152
-   pip3 install webcolors==24.11.1
+   pip3 install -r requirements.txt
    ```
 2. Add a .env file to the project directory `/your/path/Nerfturret/.env`. Add a parameter SERVER_IP and PORT. The file should look like this:
     ```dotenv
-    #Replace with your local server ip and the port you want to use
-    SERVER_IP=127.0.0.1
-    PORT=5555
+    SERVER_IP=127.0.0.1 # Replace with your local server ip
+    PORT=5555 # Replace with the port you want to use
+    CAMERA_INDEX=0 # The camera used for detection
+   
+    # adjust for the camera in use, width and height don't need to be configured
+    # bandwidth is necessary to be configured
+    CAMERA_WIDTH=640
+    CAMERA_HEIGHT=480
+    CAMERA_BANDWIDTH_WIDTH_ANGLE=90
+    CAMERA_BANDWIDTH_HEIGHT_ANGLE=70
+   
+   #Replace with the Pins used by the Pi
+    X_SERVO_PIN=18
+    Y_SERVO_PIN=19
+    CHARGE_PIN=2
+    LOAD_PIN=3
     ```
-3. Make sure both devices(server and client) are connected to the same network
-4. Starting the server: `/Nerfturret/Server/` + `py Server.py`(windows) or `python3 Server.py`(linux)
-5. Running the turret: `/Nerfturret/Nerfturret/` + `py main.py`(windows) or `python3 main.py`(linux) + [arguments](./README.md#arguments)
+
+3. (If used) Starting the server: `/Nerfturret/server/` + `py server.py`(windows) or `python3 server.py`(linux)
+4. Running the turret: `/Nerfturret/turret/` + `py turret.py`(windows) or `python3 turret.py`(linux) + [arguments](./README.md#arguments)
 
 ## Arguments
 `-h`, `--help`: Shows the arguments and their descriptions.
@@ -30,13 +62,15 @@ For more information see [object detection](./README.md#object-detection) and [c
 For more information see [color detection](./README.md#color-detection)
 
 `-p`, `--pickColor`: If used the user is redirected from the dashboard to a new site. On this site the user can
-pick colors. The mean of the selected colors will be detected. Affected by `-cr` 
+pick colors. The mean of the selected colors will be detected. Affected by `-cr`. Only works when website is running(`-rw` enabled).
 
 `-img`, `--show_image`: If used, displays the camera output after detection in a new window. Same as display on website. 
+The window is displayed on the device the detection is done.
 
-`-v`, `--verbose`: If used, gives more output in the terminal. Affected by `-i`.
+`-v`, `--verbose`: If used, more output in the terminal is given. Affected by `-i`.
 
-`-w`, `--runWebsite`: If used the Turret posts logs, detection pictures and parameters to the website.
+`-rw`, `--runWebsite`: If used, it tries to establish a connection to the server device. Necessary for the
+[web dashboard hosting](./README.md#2-optional-web-dashboard-ideal-automatic-outsourced-detection)
 
 ## Object detection
 Detects different objects. If it is possible to use color detection consider this option. Object detection uses more capacity than color detection and is therefore much slower.
