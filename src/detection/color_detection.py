@@ -1,13 +1,18 @@
+import os
+
 import cv2
 import numpy as np
 import webcolors
+from dotenv import load_dotenv
 from webcolors import IntegerRGB
+
+env_path = os.path.join(os.path.dirname(__file__), '..', '..', '.env')
+load_dotenv(env_path)
 
 
 class ColorDetection:
 
     def __init__(self, target_class, color_range, website_running,
-                 camera_size=(640, 480), camera_bandwidth=(90, 70),
                  show_img=False):
         try:
             self.target_class = webcolors.name_to_rgb(target_class)
@@ -16,15 +21,13 @@ class ColorDetection:
 
         if color_range not in range(0, 255):
             raise AttributeError("Invalid color range")
-
         self.color_range = color_range
         self.lower_rgb, self.upper_rgb = self.set_rgb_bounds(self.target_class)
-        self.camera_size = camera_size
-        self.camera_width = camera_size[0]
-        self.camera_height = camera_size[1]
-        self.camera_bandwidth = camera_bandwidth
-        self.camera_width_angle = camera_bandwidth[0]
-        self.camera_height_angle = camera_bandwidth[1]
+        self.camera_width = int(os.getenv('CAMERA_WIDTH'))
+        self.camera_height = int(os.getenv('CAMERA_HEIGHT'))
+        self.camera_width_angle = int(os.getenv('CAMERA_BANDWIDTH_WIDTH_ANGLE'))
+        self.camera_height_angle = int(
+            os.getenv('CAMERA_BANDWIDTH_HEIGHT_ANGLE'))
         self.website_running = website_running
         self.show_img = show_img
         self.counter = 0

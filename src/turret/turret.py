@@ -144,10 +144,6 @@ def with_website(camera_frame):
             "detector_class": detector.__class__.__name__,
             "detector_target_class": target_class_copy,
             "detector_color_range": detector.color_range,
-            "detector_camera_width": detector.camera_width,
-            "detector_camera_height": detector.camera_height,
-            "detector_camera_width_angle": detector.camera_width_angle,
-            "detector_camera_height_angle": detector.camera_height_angle,
             "detector_show_img": detector.show_img,
             "absolut_x_angle": controller.get_x_servo_angle(),
             "absolut_y_angle": controller.get_y_servo_angle()}

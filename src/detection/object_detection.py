@@ -2,11 +2,15 @@ import os
 
 import cv2
 import numpy as np
+from dotenv import load_dotenv
 from ultralytics import YOLO
 
 file_path = os.path.dirname(__file__)
 weight_path = os.path.join(file_path, "..", "..", "resources", "yolo_weights",
                            "yolov5su.pt")
+
+env_path = os.path.join(os.path.dirname(__file__), '..', '..', '.env')
+load_dotenv(env_path)
 
 
 def is_class(detection_class):
@@ -15,13 +19,13 @@ def is_class(detection_class):
 
 class ObjectDetection:
 
-    def __init__(self, target_class, website_running, camera_size=(640, 480),
-                 camera_bandwidth=(90, 70), show_img=False):
+    def __init__(self, target_class, website_running, show_img=False):
         self.target_class = target_class
-        self.camera_width = camera_size[0]
-        self.camera_height = camera_size[1]
-        self.camera_width_angle = camera_bandwidth[0]
-        self.camera_height_angle = camera_bandwidth[1]
+        self.camera_width = int(os.getenv('CAMERA_WIDTH'))
+        self.camera_height = int(os.getenv('CAMERA_HEIGHT'))
+        self.camera_width_angle = int(os.getenv('CAMERA_BANDWIDTH_WIDTH_ANGLE'))
+        self.camera_height_angle = int(
+            os.getenv('CAMERA_BANDWIDTH_HEIGHT_ANGLE'))
         self.color_range = 0  # only set to use one variable for a color and object detection object
         self.website_running = website_running
         self.show_img = show_img

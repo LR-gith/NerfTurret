@@ -24,7 +24,7 @@ def time_mock(mocker):
 
 @pytest.fixture
 def controller():
-    return PiController(1, 2, 3, 4)
+    return PiController()
 
 
 def test_init_pin_assign(gpio_mock_on_pi, controller):
@@ -155,9 +155,8 @@ def test_set_y_angle_upper_bound(gpio_mock_not_on_pi, controller):
     assert controller.y_servo_angle == 120
 
 
-def test_set_angle(mocker, gpio_mock_on_pi, time_mock):
+def test_set_angle(mocker, controller, gpio_mock_on_pi, time_mock):
     servo_mock = mocker.MagicMock()
-    controller = PiController(1, 2, 3, 4)
     controller.x_servo = servo_mock
     controller._set_angle(controller.x_servo, 70)
 

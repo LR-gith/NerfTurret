@@ -13,10 +13,6 @@ except (ImportError, RuntimeError):
 
 env_path = os.path.join(os.path.dirname(__file__), '..', '..', '.env')
 load_dotenv(env_path)
-X_SERVO_PIN = int(os.getenv('X_SERVO_PIN'))
-Y_SERVO_PIN = int(os.getenv('Y_SERVO_PIN'))
-CHARGE_PIN = int(os.getenv('CHARGE_PIN'))
-LOAD_PIN = int(os.getenv('LOAD_PIN'))
 
 
 class PiController:
@@ -26,10 +22,10 @@ class PiController:
         self.y_servo_angle = 90
         self.x_servo = None
         self.y_servo = None
-        self.x_servo_pin = X_SERVO_PIN
-        self.y_servo_pin = Y_SERVO_PIN
-        self.charge_pin = CHARGE_PIN
-        self.load_pin = LOAD_PIN
+        self.x_servo_pin = int(os.getenv('X_SERVO_PIN'))
+        self.y_servo_pin = int(os.getenv('Y_SERVO_PIN'))
+        self.charge_pin = int(os.getenv('CHARGE_PIN'))
+        self.load_pin = int(os.getenv('LOAD_PIN'))
         self.verbose = verbose
         self._assign_pins()
 

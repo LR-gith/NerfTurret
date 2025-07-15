@@ -136,12 +136,6 @@ def calculate_detection():
     detector_class = str(request.form.get('detector_class'))
     detector_target_class = str(request.form.get('detector_target_class'))
     detector_color_range = int(request.form.get('detector_color_range'))
-    detector_camera_width = int(request.form.get("detector_camera_width"))
-    detector_camera_height = int(request.form.get("detector_camera_height"))
-    detector_camera_width_angle = int(
-        request.form.get("detector_camera_width_angle"))
-    detector_camera_height_angle = int(
-        request.form.get("detector_camera_height_angle"))
     detector_show_img = bool(request.form.get('detector_show_img'))
     absolut_x_angle = int(request.form.get('absolut_x_angle'))
     absolut_y_angle = int(request.form.get('absolut_y_angle'))
@@ -149,21 +143,12 @@ def calculate_detection():
     if detector_class == "ObjectDetection":
         detector = ObjectDetection(target_class=detector_target_class,
                                    website_running=website_running,
-                                   camera_size=(detector_camera_width,
-                                                detector_camera_height),
-                                   camera_bandwidth=(
-                                       detector_camera_width_angle,
-                                       detector_camera_height_angle),
                                    show_img=detector_show_img
                                    )
     elif detector_class == "ColorDetection":
         detector = ColorDetection(target_class=detector_target_class,
                                   color_range=detector_color_range,
                                   website_running=website_running,
-                                  camera_size=(detector_camera_width,
-                                               detector_camera_height),
-                                  camera_bandwidth=(detector_camera_width_angle,
-                                                    detector_camera_height_angle),
                                   show_img=detector_show_img
                                   )
     else:
