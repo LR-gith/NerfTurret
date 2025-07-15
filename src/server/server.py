@@ -298,11 +298,6 @@ def log_message():
     return jsonify({"message": message})
 
 
-@app.route('/value', methods=['GET'])
-def get_value():
-    return jsonify({"current_value": stored_value['value']}), 200
-
-
 if __name__ == '__main__':
     env_path = os.path.join(os.path.dirname(__file__), '..', '..', '.env')
     load_dotenv(env_path)

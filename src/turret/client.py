@@ -92,7 +92,7 @@ def update_color_detection(frame, mask, values):
     image_success, encoded_image = cv2.imencode('.jpg', frame)
     mask_success, encoded_mask = cv2.imencode('.jpg', mask)
 
-    if image_success ^ mask_success:
+    if not (image_success and mask_success):
         raise EncodeImageException()
     image_bytes = io.BytesIO(encoded_image.tobytes())
     mask_bytes = io.BytesIO(encoded_mask.tobytes())
@@ -150,18 +150,6 @@ def calculate_detection(data, image):
 
 def create_new_buffer(old_buffer):
     return io.BytesIO(old_buffer.getvalue())
-
-
-def get_value_from_server():
-    try:
-        response = requests.get(f"{SERVER_URL}/value")
-    except requests.exceptions.ConnectionError:
-        if reconnect():
-            response = requests.get(f"{SERVER_URL}/value")
-
-    response_json = response.json()
-    print(f"Current value: {response_json["current_value"]}")
-    return True
 
 
 def update_only_image(frame):
