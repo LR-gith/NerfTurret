@@ -1,14 +1,20 @@
+import os
 import threading
 import time
 
 import cv2
+from dotenv import load_dotenv
 
 from src.exception.exception import CameraException
 
+env_path = os.path.join(os.path.dirname(__file__), '..', '..', '.env')
+load_dotenv(env_path)
+CAMERA_INDEX = int(os.getenv('CAMERA_INDEX'))
+
 
 class Camera:
-    def __init__(self, camera_index=0):
-        self.cap = cv2.VideoCapture(camera_index)
+    def __init__(self):
+        self.cap = cv2.VideoCapture(CAMERA_INDEX)
         self.ret, self.frame = self.cap.read()
         if not self.ret:
             raise CameraException("Can't get first frame")

@@ -1,4 +1,7 @@
+import os
 import time
+
+from dotenv import load_dotenv
 
 try:
     import RPi.GPIO as GPIO
@@ -8,19 +11,25 @@ except (ImportError, RuntimeError):
     GPIO = None
     running_on_pi = False
 
+env_path = os.path.join(os.path.dirname(__file__), '..', '..', '.env')
+load_dotenv(env_path)
+X_SERVO_PIN = int(os.getenv('X_SERVO_PIN'))
+Y_SERVO_PIN = int(os.getenv('Y_SERVO_PIN'))
+CHARGE_PIN = int(os.getenv('CHARGE_PIN'))
+LOAD_PIN = int(os.getenv('LOAD_PIN'))
+
 
 class PiController:
 
-    def __init__(self, x_servo_pin, y_servo_pin, charge_pin, load_pin,
-                 verbose=False):
+    def __init__(self, verbose=False):
         self.x_servo_angle = 90
         self.y_servo_angle = 90
         self.x_servo = None
         self.y_servo = None
-        self.x_servo_pin = x_servo_pin
-        self.y_servo_pin = y_servo_pin
-        self.charge_pin = charge_pin
-        self.load_pin = load_pin
+        self.x_servo_pin = X_SERVO_PIN
+        self.y_servo_pin = Y_SERVO_PIN
+        self.charge_pin = CHARGE_PIN
+        self.load_pin = LOAD_PIN
         self.verbose = verbose
         self._assign_pins()
 

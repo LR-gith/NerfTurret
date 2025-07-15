@@ -64,10 +64,6 @@ elif not running_on_pi and not website_running:
     print("Turret isn't operating on pi!")
     print("No GPIO output will be done!")
 
-X_SERVO_PIN = 18
-Y_SERVO_PIN = 19
-CHARGE_PIN = 2
-SHOOT_PIN = 3
 running = True
 counter = 0
 
@@ -86,9 +82,9 @@ print("iteration: ", print_iteration, ", class: ", target_class,
       verbose, ", pickColor: ", selector_running, ", runWebsite: ",
       website_running)
 
-controller = PiController(X_SERVO_PIN, Y_SERVO_PIN, CHARGE_PIN, SHOOT_PIN,
-                          verbose=verbose)
-camera = Camera(0)
+controller = PiController(verbose=verbose)
+controller.default_servo_position()
+camera = Camera()
 
 if website_running:
     client.clear_color_selections()
