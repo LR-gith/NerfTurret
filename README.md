@@ -26,14 +26,15 @@ automatically outsources the detection from the Pi to this device
    ```bash
    pip3 install -r requirements.txt
    ```
-2. Add a .env file to the project directory `/your/path/Nerfturret/.env`. Add a parameter SERVER_IP and PORT. The file should look like this:
+2. Add a .env file to the project directory `/your/path/Nerfturret/.env`. Add a following parameters. The file should look like this:
     ```dotenv
     SERVER_IP=127.0.0.1 # Replace with your local server ip
     PORT=5555 # Replace with the port you want to use
     CAMERA_INDEX=0 # The camera used for detection
    
-    # adjust for the camera in use, width and height don't need to be configured
+    # adjust for the camera in use, width and height can be 640 by 480
     # bandwidth is necessary to be configured
+    # (server.py only needs the following section)
     CAMERA_WIDTH=640
     CAMERA_HEIGHT=480
     CAMERA_BANDWIDTH_WIDTH_ANGLE=90
@@ -81,7 +82,7 @@ Example: `-c "cell phone"`
 
 ## Color detection
 Detects different objects based on their color. It's faster than actual object detection. The detection is based on a range around the entered color because
-it is very difficult to get the exact color especially due to constantly changing lighting.  
+it is very difficult to detect an exact color especially due to constantly changing lighting.  
 The lower bound color is calculated by subtracting the range value from each rgb value of the entered color.
 The upper bound value is calculated the same way but with addition. 
 
