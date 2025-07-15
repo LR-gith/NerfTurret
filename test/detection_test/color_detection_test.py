@@ -1,8 +1,13 @@
+import os
+import sys
+
 import cv2
 import numpy as np
 import pytest
 from webcolors import IntegerRGB
 
+sys.path.append(
+    os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 from src.detection.color_detection import ColorDetection
 
 

@@ -1,10 +1,16 @@
+import os
+import sys
+
 import pytest
 
-from exception.exception import AngleMissmatchException
-from exception.exception import CameraException
-from exception.exception import EncodeImageException
-from exception.exception import ReconnectionFailedException
-from exception.exception import UnrecognizedDetectorException
+sys.path.append(
+    os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+
+from src.exception.exception import AngleMissmatchException
+from src.exception.exception import CameraException
+from src.exception.exception import EncodeImageException
+from src.exception.exception import ReconnectionFailedException
+from src.exception.exception import UnrecognizedDetectorException
 
 
 def test_AngleMissmatchException():

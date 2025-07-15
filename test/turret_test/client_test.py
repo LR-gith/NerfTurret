@@ -1,7 +1,12 @@
 import json.decoder
+import os
+import sys
 
 import pytest
 import requests
+
+sys.path.append(
+    os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
 import src.exception.exception
 from src.exception.exception import EncodeImageException

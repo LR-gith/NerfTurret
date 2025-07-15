@@ -1,10 +1,14 @@
 import os
+import sys
 
 import cv2
 import numpy as np
 
+sys.path.append(
+    os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+
 import src.detection.object_detection
-from detection.object_detection import ObjectDetection
+from src.detection.object_detection import ObjectDetection
 
 
 def test_is_class_true():

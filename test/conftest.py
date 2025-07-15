@@ -23,6 +23,7 @@ MODULES_TO_RELOAD = [
     "src.detection.object_detection",
     "src.turret.camera",
     "src.turret.client",
+    "src.turret.pi_controller",
 ]
 
 
