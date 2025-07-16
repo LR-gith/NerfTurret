@@ -1,4 +1,3 @@
-import base64
 import io
 import os
 import sys
@@ -25,26 +24,25 @@ template_dir = os.path.abspath(
 
 app = Flask(__name__, template_folder=template_dir)
 socketio = SocketIO(app)
-no_value_set_constant = "No value set yet"
-stored_value = {"value": no_value_set_constant}
+NO_VALUE_SET_STRING = "No value set yet"
 redirectToColorSelection = {"redirect": False}
 current_image = None
 current_mask = None
 current_values = {
-    'conf': no_value_set_constant,
-    'x': no_value_set_constant,
-    'y': no_value_set_constant,
-    'relative_x_angle': no_value_set_constant,
-    'relative_y_angle': no_value_set_constant,
-    'absolut_x_angle': no_value_set_constant,
-    'absolut_y_angle': no_value_set_constant
+    'conf': NO_VALUE_SET_STRING,
+    'x': NO_VALUE_SET_STRING,
+    'y': NO_VALUE_SET_STRING,
+    'relative_x_angle': NO_VALUE_SET_STRING,
+    'relative_y_angle': NO_VALUE_SET_STRING,
+    'absolut_x_angle': NO_VALUE_SET_STRING,
+    'absolut_y_angle': NO_VALUE_SET_STRING
 }
 color_selections = {"status": "", "colors": []}
 
 
 @app.route('/')
 def homepage():
-    return render_template('index.html', value=stored_value['value'])
+    return render_template('index.html')
 
 
 @app.route('/colorSelector')
@@ -80,7 +78,7 @@ def update_object_detection():
         'image_updated': True
     })
     return jsonify({
-        "confidence": current_values["conf"],
+        "conf": current_values["conf"],
         "x": current_values["x"],
         "y": current_values["y"],
         "relative_x_angle": current_values["relative_x_angle"],
@@ -94,7 +92,8 @@ def update_object_detection():
 def update_color_detection():
     global current_image, current_mask, current_values
     if 'image' not in request.files or 'mask' not in request.files:
-        return jsonify({"error": "Missing one of the images in request"}), 400
+        return jsonify({
+            "error": "Missing either the image, the mask or both in request"}), 400
 
     image_file = request.files['image']
     current_image = decode_image(image_file)
@@ -116,7 +115,7 @@ def update_color_detection():
         'both_image_updated': True
     })
     return jsonify({
-        "confidence": current_values["conf"],
+        "conf": current_values["conf"],
         "x": current_values["x"],
         "y": current_values["y"],
         "relative_x_angle": current_values["relative_x_angle"],
@@ -176,11 +175,6 @@ def calculate_detection():
     return jsonify({"values": values}), 200
 
 
-def encode_image(img):
-    _, buffer = cv2.imencode('.jpg', img)
-    return base64.b64encode(buffer).decode('utf-8')
-
-
 def decode_image(image_file):
     img_bytes = image_file.read()
     image_array = np.frombuffer(img_bytes, np.uint8)
@@ -191,7 +185,7 @@ def decode_image(image_file):
 def update_only_image():
     global current_image
     if 'image' not in request.files:
-        return jsonify({"error": "Missing one of the images in request"}), 400
+        return jsonify({"error": "Missing image in request"}), 400
 
     image_file = request.files['image']
     current_image = decode_image(image_file)
@@ -229,11 +223,7 @@ def update_color_selections():
 
 @app.route('/redirectToColorSelection', methods=['GET'])
 def redirect_to_color_selection():
-    try:
-        socketio.emit('redirectToColorSelection')
-    except Exception as exception:
-        print(exception)
-        return jsonify({"status": "failed"})
+    socketio.emit('redirectToColorSelection')
     return jsonify({"status": "redirected"})
 
 
