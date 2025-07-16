@@ -66,7 +66,7 @@ class ObjectDetection:
             cv2.imshow("Object detection", frame)
             cv2.waitKey(1)
 
-        values = {"conf": np.round(highest_conf, 3), "x": x, "y": y,
+        values = {"conf": float(np.round(highest_conf, 3)), "x": x, "y": y,
                   "relative_x_angle": x_angle,
                   "relative_y_angle": y_angle, "absolut_x_angle": "None",
                   "absolut_y_angle": "None"}

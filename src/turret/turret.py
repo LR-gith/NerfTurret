@@ -52,8 +52,8 @@ if not website_running and selector_running:
 if website_running and not client.initialize_connection():
     exit("Failed to connect to server")
 
-from camera import Camera
-from pi_controller import PiController, running_on_pi
+from src.turret.camera import Camera
+from src.turret.pi_controller import PiController, running_on_pi
 from src.detection import object_detection
 from src.detection import color_detection
 
