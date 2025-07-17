@@ -1,6 +1,6 @@
 from src.turret.pi_controller import PiController
 
-controller = PiController(18, 19, 2, 3, verbose=True)
+controller = PiController(verbose=True)
 
 try:
     while True:
