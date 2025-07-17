@@ -25,7 +25,6 @@ def test_init_valid(mocker):
     object_detect = ObjectDetection("fork", False)
 
     assert object_detect.target_class == "fork"
-    assert object_detect.counter == 0
 
 
 def test_detect_no_object():

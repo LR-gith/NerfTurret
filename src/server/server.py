@@ -26,8 +26,8 @@ app = Flask(__name__, template_folder=template_dir)
 socketio = SocketIO(app)
 NO_VALUE_SET_STRING = "No value set yet"
 redirectToColorSelection = {"redirect": False}
-current_image = None
-current_mask = None
+CURRENT_IMAGE = None
+CURRENT_MASK = None
 current_values = {
     'conf': NO_VALUE_SET_STRING,
     'x': NO_VALUE_SET_STRING,
@@ -57,12 +57,12 @@ def ping():
 
 @app.route('/updateObjectDetection', methods=['POST'])
 def update_object_detection():
-    global current_image, current_values
+    global CURRENT_IMAGE, current_values
     if 'image' not in request.files:
         return jsonify({"error": "Missing image in request"}), 400
 
     image_file = request.files['image']
-    current_image = decode_image(image_file)
+    CURRENT_IMAGE = decode_image(image_file)
     current_values = {
         'conf': request.form.get('conf'),
         'x': request.form.get('x'),
@@ -90,16 +90,16 @@ def update_object_detection():
 
 @app.route('/updateColorDetection', methods=['POST'])
 def update_color_detection():
-    global current_image, current_mask, current_values
+    global CURRENT_IMAGE, CURRENT_MASK, current_values
     if 'image' not in request.files or 'mask' not in request.files:
         return jsonify({
             "error": "Missing either the image, the mask or both in request"}), 400
 
     image_file = request.files['image']
-    current_image = decode_image(image_file)
+    CURRENT_IMAGE = decode_image(image_file)
 
     mask_file = request.files['mask']
-    current_mask = decode_image(mask_file)
+    CURRENT_MASK = decode_image(mask_file)
     current_values = {
         'conf': request.form.get('conf'),
         'x': request.form.get('x'),
@@ -127,7 +127,7 @@ def update_color_detection():
 
 @app.route('/calculateDetection', methods=['POST'])
 def calculate_detection():
-    global current_image, current_mask, current_values
+    global CURRENT_IMAGE, CURRENT_MASK, current_values
     image_file = request.files['image']
     frame = decode_image(image_file)
 
@@ -158,10 +158,10 @@ def calculate_detection():
         np.clip(absolut_x_angle + values['relative_x_angle'], 0, 180))
     values['absolut_y_angle'] = int(
         np.clip(absolut_y_angle + values['relative_y_angle'], 60, 120))
-    current_image = result_frame
+    CURRENT_IMAGE = result_frame
     current_values = values
     if mask is not None:
-        current_mask = mask
+        CURRENT_MASK = mask
         socketio.emit('updateColorDetection', {
             'values': current_values,
             'both_image_updated': True
@@ -183,18 +183,17 @@ def decode_image(image_file):
 
 @app.route('/updateOnlyImage', methods=['POST'])
 def update_only_image():
-    global current_image
+    global CURRENT_IMAGE
     if 'image' not in request.files:
         return jsonify({"error": "Missing image in request"}), 400
 
     image_file = request.files['image']
-    current_image = decode_image(image_file)
+    CURRENT_IMAGE = decode_image(image_file)
     return jsonify({"status": "ok"}), 200
 
 
 @app.route('/get_color_selection_list')
 def get_color_selection_list():
-    global color_selections
     if not color_selections["colors"]:
         color_selections["status"] = "waiting"
     else:
@@ -204,7 +203,6 @@ def get_color_selection_list():
 
 @app.route('/clear_color_selection')
 def clear_color_selection():
-    global color_selections
     color_selections["status"] = ""
     color_selections["colors"] = []
     return jsonify(color_selections)
@@ -229,12 +227,10 @@ def redirect_to_color_selection():
 
 @app.route('/get_image')
 def get_image():
-    global current_image
-    if current_image is None:
+    if CURRENT_IMAGE is None:
         return "No image available", 404
 
-    # Convert frame to JPEG
-    ret, buffer = cv2.imencode('.jpg', current_image)
+    ret, buffer = cv2.imencode('.jpg', CURRENT_IMAGE)
     if not ret:
         return "Could not encode image", 500
 
@@ -246,12 +242,11 @@ def get_image():
 
 @app.route('/get_mask')
 def get_mask():
-    global current_mask
-    if current_mask is None:
+    global CURRENT_MASK
+    if CURRENT_MASK is None:
         return "No mask available", 404
 
-    # Convert frame to JPEG
-    ret, buffer = cv2.imencode('.jpg', current_mask)
+    ret, buffer = cv2.imencode('.jpg', CURRENT_MASK)
     if not ret:
         return "Could not encode image", 500
 

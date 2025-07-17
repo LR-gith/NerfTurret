@@ -259,7 +259,7 @@ def test_redirect_to_color_selection_success(mocker, client):
 
 
 def test_get_image_no_image_available(client):
-    server.current_image = None
+    server.CURRENT_IMAGE = None
     response = client.get('/get_image')
 
     assert response.text == "No image available"
@@ -267,7 +267,7 @@ def test_get_image_no_image_available(client):
 
 
 def test_get_image_imencode_failed(mocker, client):
-    server.current_image = "image"
+    server.CURRENT_IMAGE = "image"
     imencode_mock = mocker.patch("cv2.imencode")
     imencode_mock.return_value = False, None
 
@@ -278,7 +278,7 @@ def test_get_image_imencode_failed(mocker, client):
 
 
 def test_get_mask_no_image_available(client):
-    server.current_mask = None
+    server.CURRENT_MASK = None
     response = client.get('/get_mask')
 
     assert response.text == "No mask available"
@@ -286,7 +286,7 @@ def test_get_mask_no_image_available(client):
 
 
 def test_get_image_success(client):
-    server.current_image = np.zeros((100, 100), dtype=np.uint8)
+    server.CURRENT_IMAGE = np.zeros((100, 100), dtype=np.uint8)
 
     response = client.get('/get_image')
     assert response.status_code == 200
@@ -294,7 +294,7 @@ def test_get_image_success(client):
 
 
 def test_get_mask_imencode_failed(mocker, client):
-    server.current_mask = "image"
+    server.CURRENT_MASK = "image"
     imencode_mock = mocker.patch("cv2.imencode")
     imencode_mock.return_value = False, None
 
@@ -305,7 +305,7 @@ def test_get_mask_imencode_failed(mocker, client):
 
 
 def test_get_mask_success(client):
-    server.current_mask = np.zeros((100, 100), dtype=np.uint8)
+    server.CURRENT_MASK = np.zeros((100, 100), dtype=np.uint8)
 
     response = client.get('/get_mask')
     assert response.status_code == 200

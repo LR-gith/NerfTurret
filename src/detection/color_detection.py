@@ -30,7 +30,6 @@ class ColorDetection:
             os.getenv('CAMERA_BANDWIDTH_HEIGHT_ANGLE'))
         self.website_running = website_running
         self.show_img = show_img
-        self.counter = 0
 
 
     def detect(self, frame):
@@ -90,7 +89,7 @@ class ColorDetection:
     def color_mean(self, hex_colors) -> tuple[int, int, int]:
         if isinstance(hex_colors, str):
             hex_colors = [hex_colors]
-        if type(hex_colors) is not list:
+        if not isinstance(hex_colors, list):
             raise ValueError("Type must be an array!")
         rgb_red = 0
         rgb_green = 0

@@ -96,12 +96,12 @@ def wait_for_exit():
 def initialize_camera_and_controller():
     global camera, controller
     from src.turret.camera import Camera
-    from src.turret.pi_controller import PiController, running_on_pi
+    from src.turret.pi_controller import PiController, RUNNING_ON_PI
 
-    if not running_on_pi and args.website_running:
+    if not RUNNING_ON_PI and args.website_running:
         client.log_to_server("Turret isn't operating on pi!")
         client.log_to_server("No GPIO output will be done!")
-    elif not running_on_pi and not args.website_running:
+    elif not RUNNING_ON_PI and not args.website_running:
         print("Turret isn't operating on pi!")
         print("No GPIO output will be done!")
 

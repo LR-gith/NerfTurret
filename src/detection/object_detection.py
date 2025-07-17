@@ -30,7 +30,6 @@ class ObjectDetection:
         self.website_running = website_running
         self.show_img = show_img
         self.__model = YOLO(weight_path)
-        self.counter = 0
 
 
     def detect(self, frame):

@@ -95,8 +95,8 @@ def test_reconnect_failure(time_sleep_mock, ping_mock):
 def test_print_detection_response_helper_with_print(response_mock, capsys):
     response_mock.json.return_value = {"test one": "test print this",
                                        "test two": "test print this too"}
-    client.current_iteration = 1
-    client.print_iteration = 1
+    client.CURRENT_ITERATION = 1
+    client.PRINT_ITERATION = 1
     client.print_detection_response_helper(response_mock)
     captured_print = capsys.readouterr()
 
@@ -106,8 +106,8 @@ def test_print_detection_response_helper_with_print(response_mock, capsys):
 def test_print_detection_response_helper_without_print(response_mock, capsys):
     response_mock.json.return_value = {"test one": "test print this",
                                        "test two": "test print this too"}
-    client.current_iteration = 1
-    client.print_iteration = 2
+    client.CURRENT_ITERATION = 1
+    client.PRINT_ITERATION = 2
     client.print_detection_response_helper(response_mock)
     captured_print = capsys.readouterr()
 
@@ -455,4 +455,4 @@ def test_set_print_iteration():
     client.set_print_iteration(21)
     client.set_print_iteration(1)
 
-    assert client.print_iteration == 1
+    assert client.PRINT_ITERATION == 1

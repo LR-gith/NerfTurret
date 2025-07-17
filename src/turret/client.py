@@ -18,8 +18,8 @@ SERVER_URL = f'http://{SERVER_IP}:{PORT}'
 FRAME_DOT_JPG_STRING = 'frame.jpg'
 IMAGE_SLASH_JPEG_STRING = 'image/jpeg'
 
-current_iteration = 0
-print_iteration = 1
+CURRENT_ITERATION = 0
+PRINT_ITERATION = 1
 
 
 def initialize_connection():
@@ -55,12 +55,12 @@ def reconnect():
 
 
 def print_detection_response_helper(response):
-    global current_iteration
+    global CURRENT_ITERATION
     response_json = response.json()
-    if current_iteration % print_iteration == 0:
+    if CURRENT_ITERATION % PRINT_ITERATION == 0:
         print(', '.join(
             f"{key}: {value}" for key, value in response_json.items()))
-    current_iteration += 1
+    CURRENT_ITERATION += 1
 
 
 def update_object_detection(frame, values):
@@ -121,7 +121,7 @@ def update_color_detection(frame, mask, values):
 
 
 def calculate_detection(data, image):
-    global current_iteration
+    global CURRENT_ITERATION
     response = None
     try:
         response = requests.post(f"{SERVER_URL}/calculateDetection", data=data,
@@ -142,9 +142,9 @@ def calculate_detection(data, image):
         raise ValueError("response isn't a json format")
 
     values = response_json['values']
-    if current_iteration % print_iteration == 0:
+    if CURRENT_ITERATION % PRINT_ITERATION == 0:
         print(', '.join(f"{key}: {value}" for key, value in values.items()))
-    current_iteration += 1
+    CURRENT_ITERATION += 1
     return values
 
 
@@ -181,8 +181,7 @@ def get_color_selections():
     response_json = response.json()
     if response_json["status"] == "ok":
         return True, response_json["colors"]
-    else:
-        return False, None
+    return False, None
 
 
 def clear_color_selections():
@@ -193,10 +192,7 @@ def clear_color_selections():
             response = requests.get(f"{SERVER_URL}/clear_color_selection")
 
     response_json = response.json()
-    if not response_json["status"] and not response_json["colors"]:
-        return True
-    else:
-        return False
+    return not response_json["status"] and not response_json["colors"]
 
 
 def redirect_to_color_selection():
@@ -207,10 +203,7 @@ def redirect_to_color_selection():
             response = requests.get(f"{SERVER_URL}/redirectToColorSelection")
 
     response_json = response.json()
-    if response_json["status"] == "redirected":
-        return True
-    else:
-        return False
+    return response_json["status"] == "redirected"
 
 
 def log_to_server(message):
@@ -234,8 +227,8 @@ def ping():
 
 
 def set_print_iteration(iteration):
-    global print_iteration
-    print_iteration = iteration
+    global PRINT_ITERATION
+    PRINT_ITERATION = iteration
 
 
 if __name__ == '__main__':

@@ -6,10 +6,10 @@ from dotenv import load_dotenv
 try:
     import RPi.GPIO as GPIO
 
-    running_on_pi = True
+    RUNNING_ON_PI = True
 except (ImportError, RuntimeError):
     GPIO = None
-    running_on_pi = False
+    RUNNING_ON_PI = False
 
 env_path = os.path.join(os.path.dirname(__file__), '..', '..', '.env')
 load_dotenv(env_path)
@@ -31,7 +31,7 @@ class PiController:
 
 
     def shoot(self, charge_time, load_time):
-        if not running_on_pi:
+        if not RUNNING_ON_PI:
             return
         if charge_time not in range(0, 6) or load_time not in range(0, 6):
             raise ValueError("Invalid charge- or load-time")
@@ -45,7 +45,7 @@ class PiController:
 
 
     def charge(self, waittime):
-        if not running_on_pi:
+        if not RUNNING_ON_PI:
             return
         if waittime not in range(0, 6):
             raise ValueError("Invalid charge time")
@@ -56,7 +56,7 @@ class PiController:
 
 
     def load(self, waittime):
-        if not running_on_pi:
+        if not RUNNING_ON_PI:
             return
         if waittime not in range(0, 6):
             raise ValueError("Invalid load time")
@@ -85,7 +85,7 @@ class PiController:
 
 
     def _assign_pins(self):
-        if not running_on_pi:
+        if not RUNNING_ON_PI:
             if self.verbose: print("No servos moved because not running on Pi")
             return
         GPIO.setmode(GPIO.BCM)
@@ -128,7 +128,7 @@ class PiController:
 
 
     def _set_angle(self, servo, angle):
-        if not running_on_pi:
+        if not RUNNING_ON_PI:
             if self.verbose: print("No servos moved because not running on Pi")
             return
         duty = angle / 18 + 2
@@ -146,7 +146,7 @@ class PiController:
 
 
     def stop(self):
-        if running_on_pi:
+        if RUNNING_ON_PI:
             self.x_servo.stop()
             self.y_servo.stop()
             GPIO.cleanup()

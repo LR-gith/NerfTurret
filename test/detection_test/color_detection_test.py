@@ -22,7 +22,6 @@ def test_init_valid_color_array():
     valid_color_array = ColorDetection(["#ffffff", "#000000"], 0, False)
 
     assert valid_color_array.target_class == IntegerRGB(127, 127, 127)
-    assert valid_color_array.counter == 0
 
 
 def test_init_invalid_color_range():
