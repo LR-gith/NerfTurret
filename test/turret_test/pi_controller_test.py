@@ -12,14 +12,14 @@ from src.turret.pi_controller import PiController
 @pytest.fixture
 def gpio_mock_on_pi(mocker):
     gpio_mock = mocker.patch('src.turret.pi_controller.GPIO')
-    mocker.patch('src.turret.pi_controller.running_on_pi', True)
+    mocker.patch('src.turret.pi_controller.RUNNING_ON_PI', True)
     return gpio_mock
 
 
 @pytest.fixture
 def gpio_mock_not_on_pi(mocker):
     gpio_mock = mocker.patch('src.turret.pi_controller.GPIO')
-    mocker.patch('src.turret.pi_controller.running_on_pi', False)
+    mocker.patch('src.turret.pi_controller.RUNNING_ON_PI', False)
     return gpio_mock
 
 
