@@ -15,57 +15,76 @@ from src.exception.exception import EncodeImageException
 from src.exception.exception import AngleMissmatchException
 from src.exception.exception import ReconnectionFailedException
 
-parser = argparse.ArgumentParser()
-parser.add_argument("-i", "--iteration", type=int,
-                    help="output after I iterations", default=5)
-parser.add_argument("-c", "--class", type=str,
-                    help="detects this object class C", default="person",
-                    dest="targetClass")
-parser.add_argument("-cr", "--color_range", type=int,
-                    help="range above and below detected color", default=40)
-parser.add_argument("-img", "--showImg", action="store_true",
-                    help="When used an window will display the camera after detection")
-parser.add_argument("-v", "--verbose", action="store_true",
-                    help="Gives extra terminal output")
-parser.add_argument("-p", "--pickColor", action="store_true",
-                    help="When used lets you pick colors yourself")
-parser.add_argument("-rw", "--runWebsite", action="store_true",
-                    help="When set to false the website isn't used")
-args = parser.parse_args()
+global running
+global counter
+global args
+global camera
+global controller
+global detector
 
-print_iteration = args.iteration
-target_class = args.targetClass
-color_range = args.color_range
-show_img = args.showImg
-verbose = args.verbose
-selector_running = args.pickColor
-website_running = args.runWebsite
 
-if website_running and show_img:
-    show_img = False
-    print("Wont display image because its already displayed on the website")
-if not website_running and selector_running:
-    print("Color selector can't run because not running on website")
-    target_class = "#ffffff"
+def main():
+    global running, counter, args, camera, controller, detector
+    running = True
+    counter = 0
 
-# initializes connection to the server
-if website_running and not client.initialize_connection():
-    exit("Failed to connect to server")
+    args = initialize_args()
+    validate_args()
 
-from src.turret.camera import Camera
-from src.turret.pi_controller import PiController, running_on_pi
-from src.detection import object_detection
-from src.detection import color_detection
+    exit_thread = threading.Thread(target=wait_for_exit, daemon=True)
+    exit_thread.start()
 
-if not running_on_pi and website_running:
-    client.log_to_server("Turret isn't operating on pi!")
-    client.log_to_server("No GPIO output will be done!")
-elif not running_on_pi and not website_running:
-    print("Turret isn't operating on pi!")
-    print("No GPIO output will be done!")
+    initialize_camera_and_controller()
+    conditional_color_selector()
+    initialize_detector()
 
-running = True
-counter = 0
+    running_loop()
+
+    stop()
+
+
+def initialize_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-i", "--iteration", type=int,
+                        help="output after I iterations", default=5,
+                        dest="print_iteration")
+    parser.add_argument("-c", "--class", type=str,
+                        help="detects this object class C", default="person",
+                        dest="target_class")
+    parser.add_argument("-cr", "--color_range", type=int,
+                        help="range above and below detected color", default=40)
+    parser.add_argument("-img", "--showImg", action="store_true",
+                        help="When used an window will display the camera after detection",
+                        dest="show_img")
+    parser.add_argument("-v", "--verbose", action="store_true",
+                        help="Gives extra terminal output")
+    parser.add_argument("-p", "--pickColor", action="store_true",
+                        help="When used lets you pick colors yourself",
+                        dest="selector_running")
+    parser.add_argument("-rw", "--runWebsite", action="store_true",
+                        help="When set to false the website isn't used",
+                        dest="website_running")
+    return parser.parse_args()
+
+
+def validate_args():
+    if args.website_running and args.show_img:
+        args.showImg = False
+        print("Wont display image because its already displayed on the website")
+    if not args.website_running and args.selector_running:
+        print("Color selector can't run because not running on website")
+        args.target_class = "#ffffff"
+
+    # initializes connection to the server
+    if args.website_running and not client.initialize_connection():
+        exit("Failed to connect to server")
+
+    print("iteration: ", args.print_iteration, ", class: ", args.target_class,
+          ", color_range: ", args.color_range, ", show image: ", args.show_img,
+          ", verbose: ",
+          args.verbose, ", pickColor: ", args.selector_running,
+          ", runWebsite: ",
+          args.website_running)
 
 
 def wait_for_exit():
@@ -74,56 +93,92 @@ def wait_for_exit():
     running = False
 
 
-exit_thread = threading.Thread(target=wait_for_exit, daemon=True)
-exit_thread.start()
+def initialize_camera_and_controller():
+    global camera, controller
+    from src.turret.camera import Camera
+    from src.turret.pi_controller import PiController, running_on_pi
 
-print("iteration: ", print_iteration, ", class: ", target_class,
-      ", color_range: ", color_range, ", show image: ", show_img, ", verbose: ",
-      verbose, ", pickColor: ", selector_running, ", runWebsite: ",
-      website_running)
+    if not running_on_pi and args.website_running:
+        client.log_to_server("Turret isn't operating on pi!")
+        client.log_to_server("No GPIO output will be done!")
+    elif not running_on_pi and not args.website_running:
+        print("Turret isn't operating on pi!")
+        print("No GPIO output will be done!")
 
-controller = PiController(verbose=verbose)
-controller.default_servo_position()
-camera = Camera()
+    controller = PiController(verbose=args.verbose)
+    controller.default_servo_position()
+    camera = Camera()
 
-if website_running:
-    client.clear_color_selections()
-    client.set_print_iteration(print_iteration)
-    if selector_running:
-        client.redirect_to_color_selection()
 
-    while selector_running:
+def conditional_color_selector():
+    global running
+    if args.website_running:
+        client.clear_color_selections()
+        client.set_print_iteration(args.print_iteration)
+        if args.selector_running:
+            client.redirect_to_color_selection()
+
+        while args.selector_running:
+            ret, frame = camera.read()
+            if not ret:
+                print("Failed to grab frame!")
+                break
+
+            if not client.update_only_image(frame):
+                print("Failed to update image")
+                running = False
+
+            valid, colors = client.get_color_selections()
+
+            if valid:
+                args.selector_running = False
+                print(colors)
+                args.target_class = colors
+            else:
+                time.sleep(0.5)
+
+
+def initialize_detector():
+    global running, detector
+
+    from src.detection import object_detection
+    from src.detection import color_detection
+
+    if object_detection.is_class(args.target_class):
+        detector = object_detection.ObjectDetection(
+            target_class=args.target_class,
+            website_running=args.website_running,
+            show_img=args.show_img
+        )
+    else:
+        detector = color_detection.ColorDetection(
+            target_class=args.target_class,
+            color_range=args.color_range,
+            website_running=args.website_running,
+            show_img=args.show_img
+        )
+
+    print(f"Target class: {detector.target_class}")
+
+
+def running_loop():
+    global running, counter
+    while running:
         ret, frame = camera.read()
         if not ret:
             print("Failed to grab frame!")
             break
 
-        if not client.update_only_image(frame):
-            print("Failed to update image")
-            running = False
-
-        valid, colors = client.get_color_selections()
-
-        if valid:
-            selector_running = False
-            print(colors)
-            target_class = colors
+        if args.website_running:
+            try:
+                with_website(frame)
+            except ReconnectionFailedException as e:
+                print(str(e))
+                running = False
         else:
-            time.sleep(0.5)
+            without_website(frame)
 
-if object_detection.is_class(target_class):
-    detector = object_detection.ObjectDetection(target_class=target_class,
-                                                website_running=website_running,
-                                                show_img=show_img
-                                                )
-else:
-    detector = color_detection.ColorDetection(target_class=target_class,
-                                              color_range=color_range,
-                                              website_running=website_running,
-                                              show_img=show_img
-                                              )
-
-print(f"Target class: {detector.target_class}")
+        counter += 1
 
 
 def with_website(camera_frame):
@@ -140,7 +195,7 @@ def with_website(camera_frame):
         except ValueError:
             print("Isn't a color")
 
-    data = {"website_running": website_running,
+    data = {"website_running": args.website_running,
             "detector_class": detector.__class__.__name__,
             "detector_target_class": target_class_copy,
             "detector_color_range": detector.color_range,
@@ -162,7 +217,7 @@ def with_website(camera_frame):
 
     confidence = values["conf"]
 
-    if counter % print_iteration == 0:
+    if counter % args.print_iteration == 0:
         if confidence == -1:
             client.log_to_server(f"No {target_class_copy} object detected")
         else:
@@ -177,30 +232,18 @@ def without_website(camera_frame):
     controller.align(x_angle, y_angle)
     values['absolut_x_angle'] = controller.get_x_servo_angle()
     values['absolut_y_angle'] = controller.get_y_servo_angle()
-    if counter % print_iteration == 0:
+    if counter % args.print_iteration == 0:
         if confidence == -1:
-            print(f"No {target_class} object detected")
+            print(f"No {args.target_class} object detected")
         else:
-            print(f"Detected {target_class} object")
+            print(f"Detected {args.target_class} object")
 
 
-while running:
-    ret, frame = camera.read()
-    if not ret:
-        print("Failed to grab frame!")
-        break
+def stop():
+    detector.stop()
+    camera.stop()
+    controller.stop()
 
-    if website_running:
-        try:
-            with_website(frame)
-        except ReconnectionFailedException as e:
-            print(str(e))
-            running = False
-    else:
-        without_website(frame)
 
-    counter += 1
-
-detector.stop()
-camera.stop()
-controller.stop()
+if __name__ == '__main__':
+    main()
