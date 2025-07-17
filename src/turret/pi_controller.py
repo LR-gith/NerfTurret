@@ -119,11 +119,11 @@ class PiController:
             self.y_servo_angle = angle
         elif angle < 60:
             self.y_servo_angle = 60
-            self._set_angle(self.x_servo, 60)
+            self._set_angle(self.y_servo, 60)
             if self.verbose: print("Invalid angle for the yServo, moved to 60")
         elif 120 < angle:
             self.y_servo_angle = 120
-            self._set_angle(self.x_servo, 120)
+            self._set_angle(self.y_servo, 120)
             if self.verbose: print("Invalid angle for the yServo, moved to 120")
 
 
