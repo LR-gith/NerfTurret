@@ -1,13 +1,20 @@
+import os
+import sys
+
+sys.path.append(
+    os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from src.turret.pi_controller import PiController
 
 controller = PiController(verbose=True)
 
 try:
     while True:
-        angle1 = int(input("Enter angle for Servo 1 (0-180): "))
-        angle2 = int(input("Enter angle for Servo 2 (60-120): "))
-        if 0 <= angle1 <= 180 and 0 <= angle2 <= 180:
-            controller.align(angle1, angle2)
+        x_angle = int(input("Enter angle for servo x (0-180): "))
+        y_angle = int(input("Enter angle for servo y (60-120): "))
+        if 0 <= x_angle <= 180 and 0 <= y_angle <= 180:
+            controller._set_x_angle(x_angle)
+            controller._set_y_angle(y_angle)
         else:
             print("Angles must be between 0 and 180.")
 
