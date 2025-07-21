@@ -288,14 +288,14 @@ body {
     transform: rotate(90deg);
 }
 
-.limit-line-60 {
+.limit-line-70 {
     background-color: firebrick;
-    transform: rotate(-30deg);
+    transform: rotate(-20deg);
 }
 
-.limit-line-120 {
+.limit-line-110 {
     background-color: firebrick;
-    transform: rotate(30deg);
+    transform: rotate(20deg);
 }
 
 #image-container {

@@ -114,17 +114,17 @@ class PiController:
 
 
     def _set_y_angle(self, angle):
-        if 60 <= angle <= 120:
+        if 70 <= angle <= 110:
             self._set_angle(self.y_servo, angle)
             self.y_servo_angle = angle
-        elif angle < 60:
-            self.y_servo_angle = 60
-            self._set_angle(self.y_servo, 60)
-            if self.verbose: print("Invalid angle for the yServo, moved to 60")
-        elif 120 < angle:
-            self.y_servo_angle = 120
-            self._set_angle(self.y_servo, 120)
-            if self.verbose: print("Invalid angle for the yServo, moved to 120")
+        elif angle < 70:
+            self.y_servo_angle = 70
+            self._set_angle(self.y_servo, 70)
+            if self.verbose: print("Invalid angle for the yServo, moved to 70")
+        elif 110 < angle:
+            self.y_servo_angle = 110
+            self._set_angle(self.y_servo, 110)
+            if self.verbose: print("Invalid angle for the yServo, moved to 110")
 
 
     def _set_angle(self, servo, angle):

@@ -113,7 +113,7 @@ def test_align(gpio_mock_not_on_pi, controller):
     controller.align(-10, 30)
 
     assert controller.get_x_servo_angle() == 80
-    assert controller.get_y_servo_angle() == 120
+    assert controller.get_y_servo_angle() == 110
 
 
 def test_assign_pins_not_on_pi(gpio_mock_not_on_pi, controller):
@@ -152,13 +152,13 @@ def test_set_y_angle_in_range(gpio_mock_not_on_pi, controller):
 def test_set_y_angle_lower_bound(gpio_mock_not_on_pi, controller):
     controller._set_y_angle(-10)
 
-    assert controller.y_servo_angle == 60
+    assert controller.y_servo_angle == 70
 
 
 def test_set_y_angle_upper_bound(gpio_mock_not_on_pi, controller):
     controller._set_y_angle(200)
 
-    assert controller.y_servo_angle == 120
+    assert controller.y_servo_angle == 110
 
 
 def test_set_angle(mocker, controller, gpio_mock_on_pi, time_mock):

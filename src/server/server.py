@@ -157,7 +157,7 @@ def calculate_detection():
     values['absolut_x_angle'] = int(
         np.clip(absolut_x_angle + values['relative_x_angle'], 0, 180))
     values['absolut_y_angle'] = int(
-        np.clip(absolut_y_angle + values['relative_y_angle'], 60, 120))
+        np.clip(absolut_y_angle + values['relative_y_angle'], 70, 110))
     CURRENT_IMAGE = result_frame
     current_values = values
     if mask is not None:

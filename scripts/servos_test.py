@@ -11,7 +11,7 @@ controller = PiController(verbose=True)
 try:
     while True:
         x_angle = int(input("Enter angle for servo x (0-180): "))
-        y_angle = int(input("Enter angle for servo y (60-120): "))
+        y_angle = int(input("Enter angle for servo y (70-110): "))
         if 0 <= x_angle <= 180 and 0 <= y_angle <= 180:
             controller._set_x_angle(x_angle)
             controller._set_y_angle(y_angle)
