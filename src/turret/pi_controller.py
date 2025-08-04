@@ -82,6 +82,7 @@ class PiController:
         if self.verbose: print("Moving servo ", relative_y_angle, "in y to pos",
                                self.y_servo_angle)
         self._set_y_angle(self.y_servo_angle)
+        time.sleep(0.5)
 
 
     def _assign_pins(self):
