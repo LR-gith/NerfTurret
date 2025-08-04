@@ -45,7 +45,7 @@ def test_detect_donut():
     detector = ObjectDetection("donut", False)
     _, _, values = detector.detect(frame)
 
-    assert int(values["relative_x_angle"]) == 3
+    assert int(values["relative_x_angle"]) == -3
     assert int(values["y"]) == 199
 
 

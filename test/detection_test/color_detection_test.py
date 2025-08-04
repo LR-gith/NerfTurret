@@ -45,7 +45,7 @@ def test_detect_blue_square_on_left_side():
     square_left = ColorDetection("blue", 0, False)
     frame_out, mask, values = square_left.detect(frame)
 
-    assert int(values["relative_x_angle"]) == -22
+    assert int(values["relative_x_angle"]) == 22
     assert int(values["relative_y_angle"]) == 17
 
 

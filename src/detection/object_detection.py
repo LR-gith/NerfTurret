@@ -55,7 +55,7 @@ class ObjectDetection:
             x1, y1, x2, y2 = map(int, highest_conf_box.xyxy[0])
             x = (x1 + x2) // 2
             y = (y1 + y2) // 2
-            x_angle = int((self.camera_width_angle / self.camera_width) * (
+            x_angle = int(-(self.camera_width_angle / self.camera_width) * (
                     x - self.camera_width / 2))
             y_angle = int(-(self.camera_height_angle / self.camera_height) * (
                     y - self.camera_height / 2))

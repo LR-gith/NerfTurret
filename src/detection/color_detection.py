@@ -53,7 +53,7 @@ class ColorDetection:
                 x, y, w, h = cv2.boundingRect(largest_contour)
                 x_mid = x + (w // 2)
                 y_mid = y + (h // 2)
-                x_angle = int((self.camera_width_angle / self.camera_width) * (
+                x_angle = int(-(self.camera_width_angle / self.camera_width) * (
                         x_mid - self.camera_width / 2))
                 y_angle = int(
                     -(self.camera_height_angle / self.camera_height) * (

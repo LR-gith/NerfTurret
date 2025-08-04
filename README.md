@@ -27,23 +27,23 @@ automatically outsources the detection from the Pi to this device
    pip3 install -r requirements.txt
    ```
 2. Add a .env file to the project directory `/your/path/Nerfturret/.env`. Add a following parameters. The file should look like this:
-    ```dotenv
+   ```dotenv
     SERVER_IP=127.0.0.1 # Replace with your local server ip
     PORT=5555 # Replace with the port you want to use
     CAMERA_INDEX=0 # The camera used for detection
-   
+    
     # adjust for the camera in use, width and height can be 640 by 480
     # bandwidth is necessary to be configured
     # (server.py only needs the following section)
     CAMERA_WIDTH=640
     CAMERA_HEIGHT=480
-    CAMERA_BANDWIDTH_WIDTH_ANGLE=90
-    CAMERA_BANDWIDTH_HEIGHT_ANGLE=70
-   
-   #Replace with the Pins used by the Pi
-    X_SERVO_PIN=18
-    Y_SERVO_PIN=19
-    CHARGE_PIN=2
+    CAMERA_BANDWIDTH_WIDTH_ANGLE=50
+    CAMERA_BANDWIDTH_HEIGHT_ANGLE=25
+    
+    #Replace with the Pins used by the Pi
+    X_SERVO_PIN=2
+    Y_SERVO_PIN=17
+    CHARGE_PIN=4
     LOAD_PIN=3
     ```
 
@@ -90,4 +90,4 @@ To detect a color enter the name of one of the standard CSS3 colors.
 
 See all colors that can be detected ->  [colors](https://www.w3schools.com/cssref/css_colors.php)
 
-Example: `-c "red"`, `-c "lightblue"`, `-c "blue" -cr 60`
+Example: `-c "#187659"`, `-c "lightblue"`, `-c "blue" -cr 60`
