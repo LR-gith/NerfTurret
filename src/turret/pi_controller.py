@@ -82,7 +82,7 @@ class PiController:
         if self.verbose: print("Moving servo ", relative_y_angle, "in y to pos",
                                self.y_servo_angle)
         self._set_y_angle(self.y_servo_angle)
-        time.sleep(0.5)
+        time.sleep(0.4)
 
 
     def _assign_pins(self):
@@ -134,7 +134,7 @@ class PiController:
             return
         duty = angle / 18 + 2
         servo.ChangeDutyCycle(duty)
-        time.sleep(0.5)
+        time.sleep(0.3)
         servo.ChangeDutyCycle(0)
 
 
