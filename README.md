@@ -5,21 +5,21 @@ servos are moved to align and point towards the detected class. This can be used
 
 ## System Setup
 
-### 1. Raspberry Pi (turret controller + detection)
+### 1. Raspberry Pi (turret controller)
 - Two servos and a camera connected
 - Needs to have this repository + the .env file
-- Does the detection independently
 - Runs the `turret.py` script + [arguments](./README.md#arguments)
+- If [optional web dashboard](./README.md#2-optional-web-dashboard-ideal-automatic-outsourced-detection) isn't used, [full single pi](./README.md#3-full-single-pi-setup-not-recommended) setup is used
 
 ### 2. Optional web dashboard (ideal, automatic outsourced detection)
-- Should be a more powerful device that the Pi
-- Must also have this repository cloned
+- Uses second device that should be more powerful than the Pi
+- Must also have this repository cloned + the .env file
 - Runs the `server.py` script, which hosts the web-dashboard and
 automatically outsources the detection from the Pi to this device
 
 ### 3. Full single Pi setup (not recommended)
 - Runs `server.py` and `turret.py` + [arguments](./README.md#arguments) simultaneously on the Raspberry Pi
-- High demand on the Pi causes to much slower detection
+- High demand on the Pi causes much slower detection
 
 ## Running the code
 1. Install all packages needed:
@@ -48,7 +48,7 @@ automatically outsources the detection from the Pi to this device
     ```
 
 3. (If used) Starting the server: `/Nerfturret/server/` + `py server.py`(windows) or `python3 server.py`(linux)
-4. Running the turret: `/Nerfturret/turret/` + `py turret.py`(windows) or `python3 turret.py`(linux) + [arguments](./README.md#arguments)
+4. Running the turret: `/Nerfturret/turret/` + `py turret.py`(windows) or `python3 turret.py`(linux) + [arguments](./README.md#arguments), -> see [examples](./README.md#examples)
 
 ## Arguments
 `-h`, `--help`: Shows the arguments and their descriptions.
@@ -91,3 +91,30 @@ To detect a color enter the name of one of the standard CSS3 colors.
 See all colors that can be detected ->  [colors](https://www.w3schools.com/cssref/css_colors.php)
 
 Example: `-c "#187659"`, `-c "lightblue"`, `-c "blue" -cr 60`
+
+## Examples
+These are examples to start the turret:
+1. `sudo python3 turret.py -i 1 -cr 30 -c "#187659" -rw`
+ 
+   Prints output per detection cycle. 
+
+   Detects the color from a green red bull can (color might vary due to different light setting). 
+
+   Uses website (server device needed, can be bypassed by removing -rw).
+
+
+2. `sudo python3 turret.py -i 1 -p -rw`
+
+   Prints output per detection cycle. 
+   
+   Website required (server device needed).
+
+   Uses the color picker to determine detection color.
+
+3. `sudo python3 turret.py -i 1 -c "cell phone" -rw`
+
+   Prints output per detection cycle. 
+   
+   Uses website (can also be disabled).
+
+   Detects cell phones.
